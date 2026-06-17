@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Check M4/2</title>
+<style>
+body{font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px;background:#f5f5f5;}
+.card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+button{background:#1F2B3E;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:1rem;cursor:pointer;margin:4px;}
+.log{background:#f8f8f8;border:1px solid #ddd;border-radius:8px;padding:12px;max-height:400px;overflow-y:auto;font-size:0.82rem;font-family:monospace;margin-top:16px;}
+.ok{color:#3FA34D;font-weight:600;}.err{color:#D6483F;font-weight:600;}.warn{color:#E8A23D;font-weight:600;}
+</style></head>
+<body>
+<div class="card">
+  <h2>🔍 Check M4/2</h2>
+  <button onclick="checkM42()">1. Read M4/2 from Supabase</button>
+  <button onclick="writeM42()">2. Force Write M4/2</button>
+  <button onclick="checkM42()">3. Read Again to Verify</button>
+  <div class="log" id="log"></div>
+</div>
+<script>
+const REST = "https://ekleolcjjpgsvlqyivyy.supabase.co/rest/v1/attendance_data";
+const KEY = "sb_publishable_B0yJw0--56jd012N5PaFcA_z2ay1TIz";
+
+function log(msg, cls='') {
+  const el = document.getElementById('log');
+  const d = document.createElement('div');
+  if(cls) d.className = cls;
+  d.textContent = msg;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+}
+
+async function checkM42() {
+  log('--- Reading M4/2 from Supabase ---');
+  try {
+    const res = await fetch(REST + "?key=eq.attendance%3AM4%3A2&select=key,value,updated_at", {
+      headers: {"apikey":KEY,"Authorization":"Bearer "+KEY}
+    });
+    const rows = await res.json();
+    if (!rows.length) { log("M4/2: NOT FOUND!", 'err'); return; }
+    const data = rows[0].value;
+    const sessions = Object.keys(data.sessions||{});
+    log("M4/2 found - updated: " + rows[0].updated_at, 'ok');
+    log("Sessions: " + sessions.join(", "));
+    log("Students with logs: " + Object.keys(data.logs||{}).length);
+    sessions.forEach(s => {
+      const sess = data.sessions[s];
+      log("  " + s + ": opened=" + sess.opened + " completed=" + sess.completed);
+    });
+  } catch(e) { log("ERROR: " + e.message, 'err'); }
+}
+
+async function writeM42() {
+  log('--- Force writing M4/2 with all 4 sessions ---');
+  // Minimal test - just sessions, no student data
+  const testData = {
+    sessions: {
+      "2026-05-22": {"opened":true,"completed":true,"openedAt":"2026-05-22T13:00:00","completedAt":"2026-05-22T13:50:00","token":"BACKFILL"},
+      "2026-05-29": {"opened":true,"completed":true,"openedAt":"2026-05-29T13:00:00","completedAt":"2026-05-29T13:50:00","token":"BACKFILL"},
+      "2026-06-05": {"opened":true,"completed":true,"openedAt":"2026-06-05T13:00:00","completedAt":"2026-06-05T13:50:00","token":"BACKFILL"},
+      "2026-06-12": {"opened":true,"completed":true,"openedAt":"2026-06-12T13:00:00","completedAt":"2026-06-12T13:50:00","token":"BACKFILL"}
+    },
+    records: {},
+    logs: {},
+    noClassDates: {}
+  };
+  try {
+    const res = await fetch(REST + "?on_conflict=key", {
+      method: "POST",
+      headers: {"apikey":KEY,"Authorization":"Bearer "+KEY,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates"},
+      body: JSON.stringify({key:"attendance:M4:2", value:testData, updated_at:new Date().toISOString()})
+    });
+    if (res.ok) log("✅ Write SUCCESS - now click Read Again to verify", 'ok');
+    else log("❌ Write FAILED: HTTP " + res.status + " - " + await res.text(), 'err');
+  } catch(e) { log("ERROR: " + e.message, 'err'); }
+}
+</script>
+</body></html>
