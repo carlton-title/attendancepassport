@@ -2656,6 +2656,38 @@ async function submitResetVerify() {
 }
 
 
+// Force correct overlay on load
+(function forceOverlay() {
+  var params = new URLSearchParams(window.location.search);
+  var mode = params.get('mode');
+  var setup = params.get('setup');
+  var teacher = params.get('teacher');
+  
+  // Hide everything
+  var ids = ['teacherAuthOverlay','pinOverlay','welcomeOverlay'];
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.style.display = 'none'; el.classList.remove('show'); }
+  });
+  document.getElementById('teacherView').style.display = 'none';
+  document.getElementById('studentView').style.display = 'none';
+
+  if (mode === 'student') {
+    applyURLParams();
+    switchToStudent();
+  } else if (params.toString() === '') {
+    // Owner — show PIN directly
+    var pin = document.getElementById('pinOverlay');
+    pin.style.display = 'flex';
+    pin.classList.add('show');
+    setTimeout(function(){ document.getElementById('pinInput').focus(); }, 100);
+  } else {
+    // Unknown URL params — access denied
+    document.getElementById('studentView').style.display = 'block';
+    document.getElementById('studentLogin').innerHTML = '<div class="empty" style="padding:40px 20px;"><div class="big">🚫</div><div style="font-family:Baloo 2,sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px;">Access Denied</div><div style="font-size:0.85rem;color:var(--ink-soft);">This page can only be accessed by scanning the QR code provided by your teacher.</div></div>';
+  }
+})();
+
 // Auto-refresh teacher roster every 30s
 setInterval(() => {
   if (document.getElementById('teacherView').style.display !== 'none' && document.visibilityState === 'visible') {
