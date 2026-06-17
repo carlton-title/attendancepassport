@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Supabase Diagnostic</title>
+<style>
+body{font-family:sans-serif;max-width:700px;margin:40px auto;padding:20px;background:#f5f5f5;}
+.card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:20px;}
+button{background:#1F2B3E;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:1rem;cursor:pointer;margin-right:8px;margin-bottom:8px;}
+.log{background:#f8f8f8;border:1px solid #ddd;border-radius:8px;padding:12px;max-height:400px;overflow-y:auto;font-size:0.82rem;font-family:monospace;}
+.ok{color:#3FA34D;font-weight:600;}
+.err{color:#D6483F;font-weight:600;}
+.warn{color:#E8A23D;font-weight:600;}
+</style></head>
+<body>
+<div class="card">
+  <h2>🔍 Supabase Diagnostic</h2>
+  <button onclick="checkKeys()">1. Check What Keys Exist</button>
+  <button onclick="checkM46()">2. Check M4/6 Data</button>
+  <button onclick="runBackfillAgain()">3. Force Write M4/6 Test</button>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://ekleolcjjpgsvlqyivyy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_B0yJw0--56jd012N5PaFcA_z2ay1TIz";
+const REST = SUPABASE_URL + "/rest/v1/attendance_data";
+
+function log(msg, cls='') {
+  const el = document.getElementById('log');
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.textContent = msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+async function checkKeys() {
+  log('--- Checking all keys in Supabase ---');
+  try {
+    const res = await fetch(REST + "?select=key,updated_at&order=key", {
+      headers: {"apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY}
+    });
+    const rows = await res.json();
+    log("Total rows: " + rows.length, 'ok');
+    rows.forEach(r => log("  " + r.key + " (updated: " + r.updated_at + ")"));
+  } catch(e) { log("ERROR: " + e.message, 'err'); }
+}
+
+async function checkM46() {
+  log('--- Checking M4/6 specifically ---');
+  try {
+    const res = await fetch(REST + "?key=eq.attendance%3AM4%3A6&select=key,value,updated_at", {
+      headers: {"apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY}
+    });
+    const rows = await res.json();
+    if (!rows.length) { log("M4/6: NOT FOUND in Supabase!", 'err'); return; }
+    const data = rows[0].value;
+    const sessions = Object.keys(data.sessions || {});
+    const logs = Object.keys(data.logs || {});
+    log("M4/6 FOUND - updated: " + rows[0].updated_at, 'ok');
+    log("  Sessions: " + sessions.join(", "));
+    log("  Students with logs: " + logs.length);
+    // Check June 12
+    if (data.sessions && data.sessions["2026-06-12"]) {
+      const s = data.sessions["2026-06-12"];
+      log("  June 12 session: opened=" + s.opened + " completed=" + s.completed, 'ok');
+    } else {
+      log("  June 12 session: MISSING!", 'err');
+    }
+  } catch(e) { log("ERROR: " + e.message, 'err'); }
+}
+
+async function runBackfillAgain() {
+  log('--- Force writing M4/6 test data ---');
+  const testData = {
+    sessions: {
+      "2026-05-22": {"opened":true,"completed":true,"openedAt":"2026-05-22T10:10:00","completedAt":"2026-05-22T11:00:00","token":"BACKFILL"},
+      "2026-05-29": {"opened":true,"completed":true,"openedAt":"2026-05-29T10:10:00","completedAt":"2026-05-29T11:00:00","token":"BACKFILL"},
+      "2026-06-05": {"opened":true,"completed":true,"openedAt":"2026-06-05T10:10:00","completedAt":"2026-06-05T11:00:00","token":"BACKFILL"},
+      "2026-06-12": {"opened":true,"completed":true,"openedAt":"2026-06-12T10:10:00","completedAt":"2026-06-12T11:00:00","token":"BACKFILL"}
+    },
+    records: {"36768": {"status":"present","timestamp":"2026-06-12T10:10:00","sessionDate":"2026-06-12","remark":"Present"}},
+    logs: {"36768": [
+      {"sessionDate":"2026-05-22","status":"present","timestamp":"2026-05-22T10:10:00","remark":"Present"},
+      {"sessionDate":"2026-05-29","status":"present","timestamp":"2026-05-29T10:10:00","remark":"Present"},
+      {"sessionDate":"2026-06-05","status":"present","timestamp":"2026-06-05T10:10:00","remark":"Present"},
+      {"sessionDate":"2026-06-12","status":"present","timestamp":"2026-06-12T10:10:00","remark":"Present"}
+    ]},
+    noClassDates: {}
+  };
+  
+  try {
+    const res = await fetch(REST + "?on_conflict=key", {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates"
+      },
+      body: JSON.stringify({key: "attendance:M4:6", value: testData, updated_at: new Date().toISOString()})
+    });
+    if (res.ok) {
+      log("M4/6 test write SUCCESS!", 'ok');
+      log("Now click '2. Check M4/6 Data' to verify it saved.");
+    } else {
+      const txt = await res.text();
+      log("FAILED: " + res.status + " - " + txt, 'err');
+    }
+  } catch(e) { log("ERROR: " + e.message, 'err'); }
+}
+</script>
+</body></html>
