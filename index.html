@@ -973,15 +973,7 @@ sectionSelect.addEventListener('change', () => {
   renderQR();
 });
 
-// Student selects
-const stuGrade = document.getElementById('stuGrade');
-const stuSection = document.getElementById('stuSection');
-GRADES.forEach(g => {
-  const opt = document.createElement('option');
-  opt.value = g; opt.textContent = g;
-  stuGrade.appendChild(opt);
-});
-populateSectionOptions(stuSection, stuGrade.value);
+// Student grade/section come from QR URL params only
 // stuGrade listener removed — grade set from QR
 // stuSection listener removed — section set from QR
 
