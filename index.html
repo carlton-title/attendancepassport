@@ -321,7 +321,7 @@
 </div>
 
 <!-- PIN OVERLAY (shown only after choosing Teacher) -->
-<div class="pin-overlay" id="pinOverlay">
+<div class="pin-overlay" id="pinOverlay" style="display:none;">
   <div class="pin-box">
     <div style="font-size:2rem;margin-bottom:8px;">🔐</div>
     <h2>Teacher Access</h2>
@@ -2675,11 +2675,9 @@ async function submitResetVerify() {
     applyURLParams();
     switchToStudent();
   } else if (params.toString() === '') {
-    // Owner — show PIN directly
-    var pin = document.getElementById('pinOverlay');
-    pin.style.display = 'flex';
-    pin.classList.add('show');
-    setTimeout(function(){ document.getElementById('pinInput').focus(); }, 100);
+    // Owner — go straight to dashboard, no PIN
+    teacherUnlocked = true;
+    showTeacherView();
   } else {
     // Unknown URL params — access denied
     document.getElementById('studentView').style.display = 'block';
