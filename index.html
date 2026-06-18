@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="AttPassport">
 
 <title>Attendance Passport</title>
-<!-- APP VERSION: v3.1 WELCOME-FIX -->
+<!-- APP VERSION: v3.4 NO-AUTOREFRESH -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -924,8 +924,7 @@ function switchToStudent() {
    This just refreshes the UI to reflect database state.
    ============================================================ */
 function startAutoCheckTimer() {
-  // Auto-check removed — no background polling
-  // Use the Refresh button to manually update
+  // Auto-refresh removed — use Refresh button to manually update
 }
 
 function stopAutoCheckTimer() {
@@ -1092,47 +1091,16 @@ async function renderSessionButton() {
   const isRecovery = _recoveryActive && _recoveryDateISO;
   const withinWindow = isCurrentlyInWindow(grade, section);
 
-  if (!isRecovery) {
-    // Normal mode — always greyed out, sessions managed by edge function
-    const isOpen = session && session.opened && !session.completed;
-    if (isOpen) {
-      // Show green in-session with countdown (auto-managed)
-      wrap.innerHTML = `
-        ${schedInfo}
-        <button class="btn btn-session-green" disabled>🟢 In Session (Auto)</button>
-        <div class="countdown-bar" id="countdownBar">⏱ ${getCountdownStr(grade, section)}</div>
-      `;
-      _countdownInterval = setInterval(() => {
-        const bar = document.getElementById('countdownBar');
-        if (bar) bar.textContent = `⏱ ${getCountdownStr(grade, section)}`;
-      }, 30000);
-    } else {
-      wrap.innerHTML = `
-        ${schedInfo}
-        <button class="btn btn-session-disabled" disabled>🔘 Session (Auto-managed)</button>
-        <div class="hint" style="margin-top:4px;">Sessions open and close automatically at scheduled times</div>
-      `;
-    }
-    return;
-  }
-
-  // Recovery mode
-  if (!withinWindow) {
-    wrap.innerHTML = `
-      ${schedInfo}
-      <button class="btn btn-session-disabled" disabled>🔘 Start Session</button>
-      <div class="hint" style="margin-top:4px;color:var(--red);">Outside schedule window — recovery only works during ${sched?.start}–${sched?.end}</div>
-    `;
-    return;
-  }
-
+  // Manual session management — always show open/close button
   const isOpen = session && session.opened && !session.completed;
 
   if (isOpen) {
+    const recoveryNote = isRecovery ? `<div class="hint" style="margin-top:4px;color:var(--blue);">📅 Recovery: ${formatDateLong(_recoveryDateISO)}</div>` : '';
     wrap.innerHTML = `
       ${schedInfo}
       <button class="btn btn-session-green" id="sessionToggleBtn">🟢 In Session — tap to close</button>
       <div class="countdown-bar" id="countdownBar">⏱ ${getCountdownStr(grade, section)}</div>
+      ${recoveryNote}
     `;
     _countdownInterval = setInterval(() => {
       const bar = document.getElementById('countdownBar');
@@ -1144,10 +1112,11 @@ async function renderSessionButton() {
     });
     document.getElementById('completeBtn').removeAttribute('disabled');
   } else {
+    const recoveryNote = isRecovery ? `<div class="hint" style="margin-top:4px;color:var(--blue);">📅 Recovery: ${formatDateLong(_recoveryDateISO)}</div>` : '';
     wrap.innerHTML = `
       ${schedInfo}
-      <button class="btn btn-session-yellow" id="sessionToggleBtn">🟡 Start Session</button>
-      <div class="hint" style="margin-top:4px;">Recovery for ${formatDateLong(_recoveryDateISO)}</div>
+      <button class="btn btn-session-yellow" id="sessionToggleBtn">🟡 Open Attendance</button>
+      ${recoveryNote}
     `;
     document.getElementById('sessionToggleBtn').addEventListener('click', async () => {
       await openSession(grade, section, dateISO);
@@ -1245,16 +1214,15 @@ function renderRecoveryCard() {
     // Check that current REAL TIME is within the scheduled time window
     const withinTime = isCurrentlyInWindow(grade, section);
     if (!withinTime) {
-      hintEl.innerHTML = `<span style="color:var(--red)">⚠️ Recovery must be done during class time: ${sched.start}–${sched.end}. Current time is outside this window. Come back during that time.</span>`;
+      hintEl.innerHTML = `<span style="color:var(--red)">⚠️ Recovery must be done during class time: ${sched.start}–${sched.end}. Current time is outside this window.</span>`;
       openBtn.disabled = true;
       _recoveryActive = false;
       _recoveryDateISO = null;
       return;
     }
 
-    hintEl.innerHTML = `<span style="color:var(--green)">✅ Ready to recover ${formatDateLong(selected)} for ${grade}/Section ${section} — timestamp will be set to ${sched.start}</span>`;
+    hintEl.innerHTML = `<span style="color:var(--green)">✅ Ready to recover ${formatDateLong(selected)} — timestamp will be set to ${sched.start}</span>`;
     openBtn.disabled = false;
-    // Activate recovery mode
     _recoveryActive = true;
     _recoveryDateISO = selected;
     setTargetDate(selected);
@@ -1431,7 +1399,7 @@ async function renderSessionBanner(data) {
     wrap.innerHTML = `<div class="session-banner"><div><div class="label">🟢 Session Open — ${dateLabel}</div><div class="sub">Students can scan now</div></div></div>`;
     completeHint.style.display = 'none';
   } else {
-    wrap.innerHTML = `<div class="session-banner"><div><div class="label">⚪ No session — ${dateLabel}</div><div class="sub">Session will open automatically at scheduled time</div></div></div>`;
+    wrap.innerHTML = `<div class="session-banner"><div><div class="label">⚪ No session — ${dateLabel}</div><div class="sub">Tap 🟡 Open Attendance above to start</div></div></div>`;
     completeHint.style.display = 'none';
   }
 }
@@ -2649,7 +2617,7 @@ async function submitResetVerify() {
   }
 })();
 
-// Auto-refresh removed — use the Refresh button to manually update
+// Auto-refresh removed — use the 🔄 Refresh button to update manually
 </script>
 
 <script>
