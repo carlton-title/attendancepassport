@@ -1399,7 +1399,7 @@ async function renderSessionBanner(data) {
     wrap.innerHTML = `<div class="session-banner"><div><div class="label">🟢 Session Open — ${dateLabel}</div><div class="sub">Students can scan now</div></div></div>`;
     completeHint.style.display = 'none';
   } else {
-    wrap.innerHTML = `<div class="session-banner"><div><div class="label">⚪ No session — ${dateLabel}</div><div class="sub">Tap 🟡 Open Attendance above to start</div></div></div>`;
+    wrap.innerHTML = `<div class="session-banner"><div><div class="label">⚪ No session — ${dateLabel}</div><div class="sub">Tap 🟡 Open Attendance below to start</div></div></div>`;
     completeHint.style.display = 'none';
   }
 }
