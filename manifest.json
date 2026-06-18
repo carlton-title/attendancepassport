@@ -1,0 +1,25 @@
+{
+  "name": "Attendance Passport",
+  "short_name": "AttPassport",
+  "description": "QR Check-In & Class Roster Tracker",
+  "start_url": "/attendancepassport/",
+  "scope": "/attendancepassport/",
+  "display": "standalone",
+  "background_color": "#FBF6EC",
+  "theme_color": "#1F2B3E",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
