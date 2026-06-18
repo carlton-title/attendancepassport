@@ -2145,38 +2145,7 @@ document.getElementById('refreshBtn').addEventListener('click', () => {
   showToast("Refreshed");
 });
 
-/* ============================================================
-   INIT
-   ============================================================ */
-(function init() {
-  const params = new URLSearchParams(window.location.search);
-  document.getElementById('teacherView').style.display = 'none';
-  document.getElementById('studentView').style.display = 'none';
-  // Hide all overlays first
-  ['teacherAuthOverlay','pinOverlay'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('show');
-  });
-
-  if (params.get('mode') === 'student') {
-    // QR scan — go directly to student check-in
-    applyURLParams();
-    switchToStudent();
-  } else if (params.toString() === '') {
-    // Direct URL — teacher access, show PIN
-    document.getElementById('pinOverlay').classList.add('show');
-    setTimeout(() => document.getElementById('pinInput').focus(), 100);
-  } else {
-    // URL with unknown params — deny access
-    document.getElementById('studentView').style.display = 'block';
-    document.getElementById('studentLogin').innerHTML = `
-      <div class="empty" style="padding:40px 20px;">
-        <div class="big">🚫</div>
-        <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px;">Access Denied</div>
-        <div style="font-size:0.85rem;color:var(--ink-soft);">This page can only be accessed by scanning the QR code provided by your teacher.</div>
-      </div>`;
-  }
-})();
+/* init() removed — forceOverlay() handles all routing */
 
 /* ============================================================
    TEACHER AUTH SYSTEM
