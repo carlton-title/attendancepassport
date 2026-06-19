@@ -7,818 +7,190 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500;600&display=swap');
-
-  :root {
-    --fire: #FF4D00;
-    --ember: #FF8C42;
-    --coal: #1A1209;
-    --ash: #2E2416;
-    --smoke: #6B5E4E;
-    --cream: #F5EFE6;
-    --gold: #F5C842;
-    --white: #FFFDF9;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--coal);
-    color: var(--cream);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ─── SCREENS ─── */
-  .screen { display: none; min-height: 100vh; }
-  .screen.active { display: flex; flex-direction: column; }
-
-  /* ─── LANDING ─── */
-  #screen-landing {
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-    background: var(--coal);
-    position: relative;
-    overflow: hidden;
-  }
-
-  #screen-landing::before {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 600px; height: 300px;
-    background: radial-gradient(ellipse at bottom, rgba(255,77,0,0.25) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .landing-logo {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(3rem, 10vw, 7rem);
-    font-weight: 800;
-    line-height: 0.9;
-    text-align: center;
-    letter-spacing: -2px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .landing-logo span.hot { color: var(--fire); }
-  .landing-logo span.seat { color: var(--cream); }
-
-  .flame-icon {
-    display: block;
-    font-size: clamp(2rem, 6vw, 4rem);
-    text-align: center;
-    margin-bottom: 8px;
-    animation: flicker 2s ease-in-out infinite alternate;
-  }
-
-  @keyframes flicker {
-    0% { transform: scale(1) rotate(-2deg); }
-    100% { transform: scale(1.08) rotate(2deg); }
-  }
-
-  .landing-tagline {
-    color: var(--smoke);
-    font-size: 1rem;
-    text-align: center;
-    margin-top: 12px;
-    margin-bottom: 48px;
-    letter-spacing: 0.5px;
-  }
-
-  .landing-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    max-width: 320px;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ─── BUTTONS ─── */
-  .btn {
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 600;
-    font-size: 1rem;
-    padding: 14px 24px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: transform 0.1s, opacity 0.1s;
-    letter-spacing: 0.3px;
-  }
-  .btn:active { transform: scale(0.97); }
-
-  .btn-primary {
-    background: var(--fire);
-    color: white;
-  }
-  .btn-primary:hover { background: #e64400; }
-
-  .btn-secondary {
-    background: var(--ash);
-    color: var(--cream);
-    border: 1px solid rgba(255,255,255,0.08);
-  }
-  .btn-secondary:hover { background: #3a2e1e; }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--smoke);
-    font-size: 0.9rem;
-    padding: 10px;
-  }
-  .btn-ghost:hover { color: var(--cream); }
-
-  .btn-gold {
-    background: var(--gold);
-    color: var(--coal);
-  }
-  .btn-gold:hover { background: #e8bb30; }
-
-  .btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  /* ─── CARD ─── */
-  .card {
-    background: var(--ash);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px;
-    padding: 24px;
-  }
-
-  /* ─── INPUTS ─── */
-  input[type="text"], textarea, select {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1rem;
-    background: var(--coal);
-    color: var(--cream);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 8px;
-    padding: 12px 16px;
-    width: 100%;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  input[type="text"]:focus, textarea:focus, select:focus {
-    border-color: var(--fire);
-  }
-  input::placeholder, textarea::placeholder { color: var(--smoke); }
-
-  label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--smoke);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 6px;
-  }
-
-  .field { margin-bottom: 20px; }
-
-  /* ─── PANEL HEADER ─── */
-  .panel-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .panel-logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.3rem;
-  }
-  .panel-logo .hot { color: var(--fire); }
-
-  .panel-body {
-    flex: 1;
-    padding: 24px;
-    overflow-y: auto;
-  }
-
-  /* ─── HOST SETUP ─── */
-  #screen-host-setup .panel-body {
-    max-width: 480px;
-    margin: 0 auto;
-  }
-
-  .word-bank-area {
-    min-height: 100px;
-    resize: vertical;
-    font-size: 0.95rem;
-    line-height: 1.6;
-  }
-
-  .word-count {
-    font-size: 0.8rem;
-    color: var(--smoke);
-    margin-top: 6px;
-    text-align: right;
-  }
-
-  /* ─── HOST TV SCREEN ─── */
-  #screen-host-tv {
-    background: var(--coal);
-  }
-
-  .tv-layout {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    grid-template-rows: auto 1fr auto;
-    gap: 0;
-  }
-
-  .tv-top-bar {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 28px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-
-  .tv-room-code {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: var(--gold);
-    letter-spacing: 3px;
-  }
-
-  .tv-round-info {
-    color: var(--smoke);
-    font-size: 0.9rem;
-  }
-
-  .tv-score {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.4rem;
-    color: var(--fire);
-  }
-
-  /* Main stage */
-  .tv-stage {
-    grid-column: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-    position: relative;
-  }
-
-  .hot-seat-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--smoke);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 12px;
-  }
-
-  .hot-seat-name {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    color: var(--gold);
-    margin-bottom: 40px;
-    text-align: center;
-  }
-
-  .target-word-box {
-    background: var(--fire);
-    border-radius: 16px;
-    padding: 32px 56px;
-    text-align: center;
-    margin-bottom: 40px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .target-word-box::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
-  }
-
-  .target-word {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(2.5rem, 6vw, 5rem);
-    color: white;
-    letter-spacing: -1px;
-    position: relative;
-    z-index: 1;
-    text-transform: uppercase;
-  }
-
-  .clue-stage {
-    width: 100%;
-    max-width: 500px;
-  }
-
-  .clue-reveal-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-
-  .clue-reveal-item {
-    background: var(--ash);
-    border-radius: 8px;
-    padding: 12px 18px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    animation: slideIn 0.3s ease;
-  }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .clue-from {
-    font-size: 0.75rem;
-    color: var(--smoke);
-    min-width: 80px;
-  }
-
-  .clue-text {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--cream);
-  }
-
-  .clue-eliminated {
-    text-decoration: line-through;
-    color: var(--smoke);
-    opacity: 0.5;
-  }
-
-  .clue-eliminated-badge {
-    font-size: 0.7rem;
-    color: var(--fire);
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-
-  /* Sidebar */
-  .tv-sidebar {
-    grid-column: 2;
-    border-left: 1px solid rgba(255,255,255,0.06);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .sidebar-section {
-    padding: 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-
-  .sidebar-title {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--smoke);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 14px;
-  }
-
-  .player-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-height: 280px;
-    overflow-y: auto;
-  }
-
-  .player-chip {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    background: var(--coal);
-    border-radius: 6px;
-    font-size: 0.9rem;
-  }
-
-  .player-chip.submitted { border-left: 3px solid #4CAF50; }
-  .player-chip.hotseat { border-left: 3px solid var(--gold); }
-
-  .player-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--smoke);
-    flex-shrink: 0;
-  }
-  .player-chip.submitted .player-dot { background: #4CAF50; }
-  .player-chip.hotseat .player-dot { background: var(--gold); }
-
-  /* Bottom bar */
-  .tv-bottom-bar {
-    grid-column: 1 / -1;
-    padding: 16px 28px;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .host-controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .clues-submitted-count {
-    color: var(--smoke);
-    font-size: 0.9rem;
-  }
-
-  /* ─── WAITING / LOBBY ─── */
-  #screen-host-lobby {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 32px;
-    padding: 40px 24px;
-  }
-
-  .lobby-code {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(4rem, 12vw, 8rem);
-    color: var(--gold);
-    letter-spacing: 12px;
-    line-height: 1;
-  }
-
-  .lobby-label {
-    font-size: 0.85rem;
-    color: var(--smoke);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-  }
-
-  .lobby-players {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    max-width: 600px;
-  }
-
-  .lobby-player-tag {
-    background: var(--ash);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 100px;
-    padding: 8px 18px;
-    font-size: 0.95rem;
-    animation: popIn 0.25s ease;
-  }
-
-  @keyframes popIn {
-    from { transform: scale(0.7); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-
-  .join-url {
-    font-size: 0.85rem;
-    color: var(--smoke);
-    margin-top: -16px;
-  }
-
-  /* ─── STUDENT JOIN ─── */
-  #screen-student-join {
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-  }
-
-  #screen-student-join .card {
-    width: 100%;
-    max-width: 360px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .join-logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 2rem;
-    text-align: center;
-    margin-bottom: 4px;
-  }
-  .join-logo .hot { color: var(--fire); }
-
-  /* ─── STUDENT WAITING ─── */
-  #screen-student-waiting {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 20px;
-    padding: 40px 24px;
-  }
-
-  .waiting-pulse {
-    width: 60px; height: 60px;
-    border-radius: 50%;
-    background: var(--fire);
-    margin: 0 auto;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.15); opacity: 0.7; }
-  }
-
-  /* ─── STUDENT CLUE SCREEN ─── */
-  #screen-student-clue {
-    padding: 0;
-  }
-
-  .student-panel {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 24px;
-    gap: 20px;
-    max-width: 480px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  .round-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255,77,0,0.15);
-    border: 1px solid rgba(255,77,0,0.3);
-    border-radius: 100px;
-    padding: 6px 14px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--ember);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    align-self: flex-start;
-  }
-
-  .word-reveal-card {
-    background: var(--ash);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    padding: 24px;
-    text-align: center;
-  }
-
-  .word-reveal-label {
-    font-size: 0.75rem;
-    color: var(--smoke);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-  }
-
-  .word-reveal-text {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(1.8rem, 6vw, 2.8rem);
-    color: var(--fire);
-    text-transform: uppercase;
-    letter-spacing: -1px;
-  }
-
-  .hot-seat-info {
-    background: rgba(245, 200, 66, 0.08);
-    border: 1px solid rgba(245, 200, 66, 0.2);
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 0.9rem;
-    color: var(--gold);
-    text-align: center;
-  }
-
-  .clue-input-area {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .clue-rules {
-    font-size: 0.8rem;
-    color: var(--smoke);
-    line-height: 1.5;
-  }
-
-  /* ─── STUDENT HOT SEAT ─── */
-  #screen-student-hotseat {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 40px 24px;
-    gap: 24px;
-  }
-
-  .hotseat-fire {
-    font-size: 4rem;
-    animation: flicker 1.5s ease-in-out infinite alternate;
-  }
-
-  .hotseat-headline {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 2rem;
-    line-height: 1.1;
-  }
-
-  .hotseat-sub {
-    color: var(--smoke);
-    font-size: 1rem;
-    max-width: 280px;
-  }
-
-  /* ─── ROUND RESULT ─── */
-  #screen-result {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 24px;
-    padding: 40px 24px;
-  }
-
-  .result-icon { font-size: 4rem; }
-
-  .result-headline {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    line-height: 1;
-  }
-
-  .result-word {
-    color: var(--smoke);
-    font-size: 1rem;
-  }
-
-  .points-gained {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 3rem;
-    color: var(--gold);
-  }
-
-  .total-score-line {
-    color: var(--smoke);
-    font-size: 0.9rem;
-  }
-
-  /* ─── GAME OVER ─── */
-  #screen-gameover {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 28px;
-    padding: 40px 24px;
-    background: var(--coal);
-    position: relative;
-    overflow: hidden;
-  }
-
-  #screen-gameover::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at center, rgba(255,77,0,0.12) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .gameover-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(3rem, 8vw, 6rem);
-    line-height: 0.9;
-    letter-spacing: -2px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .gameover-score {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(4rem, 12vw, 8rem);
-    color: var(--gold);
-    line-height: 1;
-    position: relative;
-    z-index: 1;
-  }
-
-  .gameover-label {
-    color: var(--smoke);
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ─── TOAST ─── */
-  #toast {
-    position: fixed;
-    bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--ash);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-size: 0.9rem;
-    transition: transform 0.3s ease;
-    z-index: 999;
-    white-space: nowrap;
-    pointer-events: none;
-  }
-  #toast.show { transform: translateX(-50%) translateY(0); }
-
-  /* ─── UTILS ─── */
-  .text-fire { color: var(--fire); }
-  .text-gold { color: var(--gold); }
-  .text-smoke { color: var(--smoke); }
-  .text-center { text-align: center; }
-  .mt-4 { margin-top: 16px; }
-  .mt-8 { margin-top: 32px; }
-
-  h2 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 1.4rem;
-    margin-bottom: 6px;
-  }
-
-  .submitted-ok {
-    background: rgba(76, 175, 80, 0.1);
-    border: 1px solid rgba(76, 175, 80, 0.3);
-    border-radius: 8px;
-    padding: 16px;
-    text-align: center;
-    color: #81C784;
-    font-weight: 600;
-  }
-
-  .divider {
-    height: 1px;
-    background: rgba(255,255,255,0.06);
-    margin: 8px 0;
-  }
-
-  /* Clues waiting indicator */
-  .clues-waiting-bar {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .clue-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: #4CAF50;
-    animation: popIn 0.2s ease;
-  }
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --fire: #FF4D00;
+  --ember: #FF8C42;
+  --coal: #1A1209;
+  --ash: #2E2416;
+  --smoke: #6B5E4E;
+  --cream: #F5EFE6;
+  --gold: #F5C842;
+  --green: #4CAF50;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--coal); color: var(--cream); min-height: 100vh; overflow-x: hidden; }
+
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ── LANDING ── */
+#screen-landing { align-items: center; justify-content: center; gap: 0; position: relative; overflow: hidden; }
+#screen-landing::before { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:600px; height:300px; background:radial-gradient(ellipse at bottom, rgba(255,77,0,0.25) 0%, transparent 70%); pointer-events:none; }
+.landing-logo { font-family:'Syne',sans-serif; font-size:clamp(3rem,10vw,7rem); font-weight:800; line-height:0.9; text-align:center; letter-spacing:-2px; position:relative; z-index:1; }
+.landing-logo .hot { color:var(--fire); }
+.flame-icon { display:block; font-size:clamp(2rem,6vw,4rem); text-align:center; margin-bottom:8px; animation:flicker 2s ease-in-out infinite alternate; }
+@keyframes flicker { 0%{transform:scale(1) rotate(-2deg);} 100%{transform:scale(1.08) rotate(2deg);} }
+.landing-tagline { color:var(--smoke); font-size:1rem; text-align:center; margin-top:12px; margin-bottom:48px; }
+.landing-buttons { display:flex; flex-direction:column; gap:12px; width:100%; max-width:320px; position:relative; z-index:1; }
+
+/* ── BUTTONS ── */
+.btn { font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; padding:14px 24px; border:none; border-radius:8px; cursor:pointer; transition:transform 0.1s; }
+.btn:active { transform:scale(0.97); }
+.btn-primary { background:var(--fire); color:white; }
+.btn-primary:hover { background:#e64400; }
+.btn-secondary { background:var(--ash); color:var(--cream); border:1px solid rgba(255,255,255,0.08); }
+.btn-secondary:hover { background:#3a2e1e; }
+.btn-ghost { background:transparent; color:var(--smoke); font-size:0.9rem; padding:10px; }
+.btn-ghost:hover { color:var(--cream); }
+.btn-gold { background:var(--gold); color:var(--coal); }
+.btn-gold:hover { background:#e8bb30; }
+.btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+/* ── CARD ── */
+.card { background:var(--ash); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:24px; }
+
+/* ── INPUTS ── */
+input[type="text"], select { font-family:'DM Sans',sans-serif; font-size:1rem; background:var(--coal); color:var(--cream); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:12px 16px; width:100%; outline:none; transition:border-color 0.2s; }
+input[type="text"]:focus, select:focus { border-color:var(--fire); }
+input::placeholder { color:var(--smoke); }
+label { display:block; font-size:0.8rem; font-weight:600; color:var(--smoke); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+.field { margin-bottom:20px; }
+
+/* ── PANEL ── */
+.panel-header { padding:20px 24px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:12px; }
+.panel-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; }
+.panel-logo .hot { color:var(--fire); }
+.panel-body { flex:1; padding:24px; overflow-y:auto; max-width:480px; margin:0 auto; width:100%; }
+
+/* ── LOBBY ── */
+#screen-host-lobby { align-items:center; justify-content:center; text-align:center; gap:24px; padding:40px 24px; }
+.lobby-code { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(4rem,12vw,8rem); color:var(--gold); letter-spacing:12px; line-height:1; }
+.lobby-label { font-size:0.85rem; color:var(--smoke); text-transform:uppercase; letter-spacing:1.5px; }
+.lobby-players { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-width:600px; }
+.lobby-player-tag { background:var(--ash); border:1px solid rgba(255,255,255,0.08); border-radius:100px; padding:8px 18px; font-size:0.95rem; animation:popIn 0.25s ease; }
+@keyframes popIn { from{transform:scale(0.7);opacity:0;} to{transform:scale(1);opacity:1;} }
+
+/* ── TV LAYOUT ── */
+#screen-host-tv { background:var(--coal); }
+.tv-layout { flex:1; display:grid; grid-template-columns:1fr 300px; grid-template-rows:auto 1fr auto; }
+.tv-top-bar { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.tv-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; }
+.tv-logo .hot { color:var(--fire); }
+.tv-room-code { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; color:var(--gold); letter-spacing:3px; }
+.tv-score { font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; color:var(--fire); }
+.tv-round-badge { font-size:0.8rem; color:var(--smoke); }
+
+.tv-stage { grid-column:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; gap:20px; }
+
+/* Round level badge */
+.level-badge { display:inline-flex; align-items:center; gap:8px; border-radius:100px; padding:6px 18px; font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; }
+.level-A1 { background:rgba(76,175,80,0.15); border:1px solid rgba(76,175,80,0.3); color:#81C784; }
+.level-A2 { background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.3); color:#64B5F6; }
+.level-B1 { background:rgba(255,193,7,0.15); border:1px solid rgba(255,193,7,0.3); color:#FFD54F; }
+.level-B2 { background:rgba(255,87,34,0.15); border:1px solid rgba(255,87,34,0.3); color:#FF8A65; }
+.level-C1 { background:rgba(156,39,176,0.15); border:1px solid rgba(156,39,176,0.3); color:#CE93D8; }
+
+.hot-seat-label { font-size:0.8rem; font-weight:600; color:var(--smoke); text-transform:uppercase; letter-spacing:1.5px; }
+.hot-seat-name { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(1.8rem,4vw,3rem); color:var(--gold); text-align:center; }
+
+.word-box { background:var(--fire); border-radius:16px; padding:28px 52px; text-align:center; position:relative; overflow:hidden; }
+.word-box::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,transparent 60%); }
+.word-box .word { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(2.5rem,6vw,5rem); color:white; letter-spacing:-1px; text-transform:uppercase; position:relative; z-index:1; }
+
+/* Timer */
+.timer-ring { position:relative; width:90px; height:90px; }
+.timer-ring svg { transform:rotate(-90deg); }
+.timer-ring .bg { fill:none; stroke:var(--ash); stroke-width:6; }
+.timer-ring .fg { fill:none; stroke:var(--fire); stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset 1s linear, stroke 0.3s; }
+.timer-number { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:1.6rem; }
+
+/* Word queue */
+.word-queue { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:500px; }
+.word-chip { background:var(--ash); border:1px solid rgba(255,255,255,0.08); border-radius:100px; padding:5px 14px; font-size:0.82rem; }
+.word-chip.current { background:var(--fire); color:white; border-color:var(--fire); }
+.word-chip.done { opacity:0.3; text-decoration:line-through; }
+
+/* Sidebar */
+.tv-sidebar { grid-column:2; border-left:1px solid rgba(255,255,255,0.06); display:flex; flex-direction:column; overflow:hidden; }
+.sidebar-section { padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.sidebar-title { font-size:0.7rem; font-weight:600; color:var(--smoke); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+.player-list { display:flex; flex-direction:column; gap:6px; }
+.player-chip { display:flex; align-items:center; gap:8px; padding:7px 10px; background:var(--coal); border-radius:6px; font-size:0.85rem; }
+.player-chip.hotseat { border-left:3px solid var(--gold); }
+.player-dot { width:7px; height:7px; border-radius:50%; background:var(--smoke); flex-shrink:0; }
+.player-chip.hotseat .player-dot { background:var(--gold); }
+
+/* Round progress */
+.round-progress { display:flex; gap:6px; }
+.round-dot { width:28px; height:28px; border-radius:50%; border:2px solid var(--ash); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:600; color:var(--smoke); }
+.round-dot.active { border-color:var(--fire); color:var(--fire); }
+.round-dot.done { background:var(--fire); border-color:var(--fire); color:white; }
+
+/* Score display */
+.score-big { font-family:'Syne',sans-serif; font-weight:800; font-size:2.5rem; color:var(--gold); text-align:center; }
+.score-label { font-size:0.75rem; color:var(--smoke); text-transform:uppercase; letter-spacing:1px; text-align:center; }
+
+/* Bottom bar */
+.tv-bottom-bar { grid-column:1/-1; padding:14px 24px; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.host-controls { display:flex; gap:10px; align-items:center; }
+
+/* ── DISPLAY VIEW (TV only) ── */
+#screen-display { background:var(--coal); align-items:center; justify-content:center; flex-direction:column; gap:24px; }
+.display-word-box { background:var(--fire); border-radius:20px; padding:40px 80px; text-align:center; position:relative; overflow:hidden; }
+.display-word-box::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,transparent 60%); }
+.display-word { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(4rem,12vw,9rem); color:white; text-transform:uppercase; letter-spacing:-2px; position:relative; z-index:1; }
+.display-hotseat { font-family:'Syne',sans-serif; font-weight:800; font-size:2rem; color:var(--gold); }
+.display-meta { display:flex; gap:32px; align-items:center; }
+.display-score { font-family:'Syne',sans-serif; font-weight:800; font-size:1.8rem; color:var(--fire); }
+.display-round { font-size:1rem; color:var(--smoke); }
+.display-timer { font-family:'Syne',sans-serif; font-weight:800; font-size:3rem; color:var(--cream); }
+.display-waiting { font-family:'Syne',sans-serif; font-weight:700; font-size:2rem; color:var(--smoke); text-align:center; }
+
+/* ── STUDENT VIEW ── */
+#screen-student-join { align-items:center; justify-content:center; padding:40px 24px; }
+#screen-student-join .card { width:100%; max-width:360px; display:flex; flex-direction:column; gap:20px; }
+.join-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:2rem; text-align:center; }
+.join-logo .hot { color:var(--fire); }
+
+#screen-student-waiting { align-items:center; justify-content:center; text-align:center; gap:20px; padding:40px 24px; }
+.waiting-pulse { width:60px; height:60px; border-radius:50%; background:var(--fire); margin:0 auto; animation:pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.15);opacity:0.7;} }
+
+#screen-student-word { align-items:center; justify-content:center; padding:32px 24px; gap:20px; text-align:center; }
+.student-word-box { background:var(--fire); border-radius:16px; padding:24px 40px; text-align:center; width:100%; max-width:340px; }
+.student-word { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(2rem,8vw,3rem); color:white; text-transform:uppercase; letter-spacing:-1px; }
+.student-hotseat-info { background:rgba(245,200,66,0.08); border:1px solid rgba(245,200,66,0.2); border-radius:8px; padding:12px 16px; font-size:0.9rem; color:var(--gold); width:100%; max-width:340px; text-align:center; }
+.student-instruction { color:var(--smoke); font-size:0.9rem; max-width:280px; line-height:1.5; }
+.student-score { font-family:'Syne',sans-serif; font-weight:800; font-size:1.8rem; color:var(--fire); }
+
+#screen-student-hotseat { align-items:center; justify-content:center; text-align:center; padding:40px 24px; gap:24px; }
+.hotseat-fire { font-size:4rem; animation:flicker 1.5s ease-in-out infinite alternate; }
+.hotseat-headline { font-family:'Syne',sans-serif; font-weight:800; font-size:2rem; line-height:1.1; }
+.hotseat-sub { color:var(--smoke); font-size:1rem; max-width:280px; }
+
+#screen-gameover { align-items:center; justify-content:center; text-align:center; gap:28px; padding:40px 24px; position:relative; overflow:hidden; }
+#screen-gameover::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at center, rgba(255,77,0,0.12) 0%, transparent 70%); pointer-events:none; }
+.gameover-score { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(4rem,12vw,8rem); color:var(--gold); line-height:1; position:relative; z-index:1; }
+.gameover-title { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(2rem,6vw,4rem); line-height:0.9; position:relative; z-index:1; }
+
+/* ── TOAST ── */
+#toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--ash); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:12px 20px; font-size:0.9rem; transition:transform 0.3s ease; z-index:999; white-space:nowrap; pointer-events:none; }
+#toast.show { transform:translateX(-50%) translateY(0); }
+
+h2 { font-family:'Syne',sans-serif; font-weight:700; font-size:1.4rem; margin-bottom:6px; }
 </style>
 </head>
 <body>
 
-<!-- ═══ SCREENS ═══ -->
-
 <!-- 1. Landing -->
 <div id="screen-landing" class="screen active">
   <span class="flame-icon">🔥</span>
-  <div class="landing-logo">
-    <span class="hot">HOT</span><br>
-    <span class="seat">SEAT</span>
-  </div>
-  <p class="landing-tagline">Family &amp; Relationships · A2</p>
-  <div class="landing-buttons" id="landingButtons">
+  <div class="landing-logo"><span class="hot">HOT</span><br><span>SEAT</span></div>
+  <p class="landing-tagline" style="margin-top:12px;margin-bottom:48px;">Family & Relationships</p>
+  <div class="landing-buttons">
     <button class="btn btn-primary" id="hostBtn" onclick="goTo('screen-host-setup')">Host a Game</button>
     <button class="btn btn-secondary" onclick="goTo('screen-student-join')">Join a Game</button>
   </div>
@@ -827,160 +199,26 @@
 <!-- 2. Host Setup -->
 <div id="screen-host-setup" class="screen">
   <div class="panel-header">
-    <div class="panel-logo"><span class="hot">🔥</span> <span class="hot">HOT</span> SEAT</div>
+    <div class="panel-logo"><span class="hot">🔥 HOT</span> SEAT</div>
   </div>
   <div class="panel-body">
-    <h2>Family &amp; Relationships</h2>
-    <p class="text-smoke" style="margin-bottom:28px;font-size:0.95rem;">A2 · 120 words pre-loaded. Edit, add, or remove before launching.</p>
+    <h2>Game Setup</h2>
+    <p style="color:var(--smoke);font-size:0.9rem;margin-bottom:24px;">5 rounds · 15 words each · scaffolded A1→C1</p>
 
     <div class="field">
-      <label>Word Bank <span class="text-smoke">(one word or phrase per line)</span></label>
-      <textarea class="word-bank-area" id="wordBankInput" rows="8">genealogy
-inheritance
-stepmother
-stepfather
-stepsister
-stepbrother
-divorce
-widower
-widow
-ancestor
-adoption
-separated
-congenial
-maternal
-paternal
-sibling
-offspring
-guardian
-custodian
-descendant
-relative
-affectionate
-nurturing
-protective
-devoted
-supportive
-estranged
-reconciled
-orphaned
-fostered
-remarried
-engaged
-betrothed
-newlywed
-expectant
-pregnant
-bereaved
-grieving
-cherished
-adored
-neglected
-abandoned
-spoiled
-disciplined
-rebellious
-obedient
-dependent
-independent
-trustworthy
-reliable
-loyal
-faithful
-jealous
-possessive
-controlling
-dominant
-submissive
-compassionate
-empathetic
-forgiving
-resentful
-biological
-adoptive
-surrogate
-legitimate
-illegitimate
-firstborn
-youngest
-eldest
-identical
-fraternal
-monogamous
-polygamous
-celibate
-bachelor
-spinster
-patriarch
-matriarch
-dynasty
-lineage
-bloodline
-kinship
-heritage
-legacy
-surname
-maiden
-godmother
-godfather
-godchild
-namesake
-heirloom
-obituary
-eulogy
-mourning
-memorial
-cremation
-burial
-cemetery
-tombstone
-baptism
-christening
-confirmation
-circumcision
-dowry
-alimony
-prenuptial
-custody
-visitation
-annulment
-infertility
-miscarriage
-stillborn
-premature
-triplets
-quadruplets
-puberty
-adolescence
-menopause
-senility
-dementia
-bereavement
-cohabitation</textarea>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
-        <div class="word-count" id="wordCount">120 words</div>
-        <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.8rem;" onclick="togglePreview()">🔀 Shuffle preview</button>
-      </div>
-      <div id="shufflePreview" style="display:none;margin-top:12px;">
-        <div style="font-size:0.75rem;color:var(--smoke);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">First <span id="previewRoundCount">10</span> words this game</div>
-        <div id="previewList" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-        <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.8rem;margin-top:10px;" onclick="reshufflePreview()">↻ Reshuffle</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Rounds</label>
-      <select id="roundsSelect">
-        <option value="5">5 rounds</option>
-        <option value="10" selected>10 rounds</option>
-        <option value="15">15 rounds</option>
-        <option value="20">20 rounds</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Your name (shown as Host)</label>
+      <label>Your name</label>
       <input type="text" id="hostName" placeholder="Teacher" value="Teacher" />
+    </div>
+
+    <div style="background:var(--ash);border-radius:10px;padding:16px;margin-bottom:24px;">
+      <div style="font-size:0.75rem;color:var(--smoke);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Round Structure</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:0.88rem;">
+        <div style="display:flex;justify-content:space-between;"><span>Round 1</span><span style="color:var(--smoke);">15 × <span style="color:#81C784">A1</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Round 2</span><span style="color:var(--smoke);">10 × <span style="color:#81C784">A1</span> · 5 × <span style="color:#64B5F6">A2</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Round 3</span><span style="color:var(--smoke);">5 × <span style="color:#81C784">A1</span> · 5 × <span style="color:#64B5F6">A2</span> · 5 × <span style="color:#FFD54F">B1</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Round 4</span><span style="color:var(--smoke);">5 × <span style="color:#64B5F6">A2</span> · 5 × <span style="color:#FFD54F">B1</span> · 5 × <span style="color:#FF8A65">B2</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Round 5</span><span style="color:var(--smoke);">5 × <span style="color:#FFD54F">B1</span> · 5 × <span style="color:#FF8A65">B2</span> · 5 × <span style="color:#CE93D8">C1</span></span></div>
+      </div>
     </div>
 
     <button class="btn btn-primary" style="width:100%" onclick="createGame()">Create Game Room</button>
@@ -992,94 +230,128 @@ cohabitation</textarea>
 <div id="screen-host-lobby" class="screen">
   <div class="lobby-label">Room Code</div>
   <div class="lobby-code" id="lobbyCode">----</div>
-  <div style="display:flex;gap:32px;align-items:flex-start;justify-content:center;flex-wrap:wrap;margin-top:8px;">
-    <div style="text-align:center;">
-      <div id="lobbyQR" style="background:white;padding:10px;border-radius:10px;display:inline-block;"></div>
-      <div class="join-url" style="margin-top:8px;" id="joinUrl"></div>
-    </div>
+  <div style="text-align:center;">
+    <div id="lobbyQR" style="background:white;padding:10px;border-radius:10px;display:inline-block;"></div>
+    <div style="font-size:0.8rem;color:var(--smoke);margin-top:8px;" id="joinUrl"></div>
   </div>
   <div class="lobby-players" id="lobbyPlayers">
-    <div class="text-smoke" style="font-size:0.9rem;">Waiting for players to join...</div>
+    <div style="color:var(--smoke);font-size:0.9rem;">Waiting for players...</div>
   </div>
   <button class="btn btn-primary" id="startGameBtn" onclick="startGame()" disabled>Start Game</button>
   <button class="btn btn-ghost" onclick="cancelGame()">Cancel</button>
 </div>
 
-<!-- 4. Host TV Game Screen -->
+<!-- 4. Host TV (teacher laptop view) -->
 <div id="screen-host-tv" class="screen">
   <div class="tv-layout">
-    <!-- Top bar -->
     <div class="tv-top-bar">
-      <div class="panel-logo" style="font-size:1.1rem;"><span class="hot">🔥 HOT</span> SEAT</div>
-      <div class="tv-round-info">Round <span id="tvRoundNum">1</span> of <span id="tvRoundTotal">10</span></div>
+      <div class="tv-logo"><span class="hot">🔥 HOT</span> SEAT</div>
+      <div class="tv-round-badge">Round <span id="tvRoundNum">1</span> of 5</div>
       <div class="tv-room-code" id="tvRoomCode"></div>
       <div class="tv-score">🏆 <span id="tvScore">0</span> pts</div>
-      <button id="muteBtn" onclick="toggleMute()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--cream);font-size:1.1rem;padding:4px 10px;cursor:pointer;" title="Toggle sound">🔊</button>
+      <button id="muteBtn" onclick="toggleMute()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--cream);font-size:1.1rem;padding:4px 10px;cursor:pointer;">🔊</button>
     </div>
 
-    <!-- Stage -->
     <div class="tv-stage">
-      <div id="tvPhaseWaiting" style="text-align:center;">
-        <div class="text-smoke" style="font-size:1.1rem;">Starting round...</div>
-      </div>
-
-      <div id="tvPhaseActive" style="display:none;width:100%;flex-direction:column;align-items:center;">
+      <div id="stageWaiting" style="text-align:center;color:var(--smoke);">Starting...</div>
+      <div id="stageActive" style="display:none;width:100%;flex-direction:column;align-items:center;gap:16px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="level-badge" id="tvLevelBadge">A1</div>
+          <div class="timer-ring">
+            <svg width="90" height="90" viewBox="0 0 90 90">
+              <circle class="bg" cx="45" cy="45" r="38"/>
+              <circle class="fg" id="timerCircle" cx="45" cy="45" r="38" stroke-dasharray="238.76" stroke-dashoffset="0"/>
+            </svg>
+            <div class="timer-number" id="timerNumber">40</div>
+          </div>
+        </div>
         <div class="hot-seat-label">In the Hot Seat</div>
         <div class="hot-seat-name" id="tvHotSeatName">—</div>
-
-        <div class="target-word-box">
-          <div class="target-word" id="tvTargetWord">—</div>
+        <div class="word-box">
+          <div class="word" id="tvWord">—</div>
         </div>
-
-        <div class="clue-stage">
-          <ul class="clue-reveal-list" id="tvClueList"></ul>
-          <div class="clues-submitted-count" id="cluesSubmittedCount"></div>
-        </div>
+        <div class="word-queue" id="tvWordQueue"></div>
       </div>
     </div>
 
-    <!-- Sidebar -->
     <div class="tv-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Rounds</div>
+        <div class="round-progress" id="roundProgress">
+          <div class="round-dot active">1</div>
+          <div class="round-dot">2</div>
+          <div class="round-dot">3</div>
+          <div class="round-dot">4</div>
+          <div class="round-dot">5</div>
+        </div>
+      </div>
       <div class="sidebar-section">
         <div class="sidebar-title">Players</div>
         <div class="player-list" id="tvPlayerList"></div>
       </div>
-      <div class="sidebar-section" style="flex:1">
-        <div class="sidebar-title">Clues In</div>
-        <div class="clues-waiting-bar" id="tvCluesDots"></div>
+      <div class="sidebar-section" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+        <div class="score-label">Team Score</div>
+        <div class="score-big" id="tvScoreSide">0</div>
+        <div class="score-label">points</div>
       </div>
     </div>
 
-    <!-- Bottom controls -->
     <div class="tv-bottom-bar">
-      <div id="tvControlReveal" class="host-controls" style="display:none">
-        <button class="btn btn-secondary" id="btnRevealClue" onclick="revealNextClue()">Reveal Next Clue →</button>
-        <span class="text-smoke" id="cluesLeftLabel"></span>
+      <div id="ctrlWait" style="color:var(--smoke);font-size:0.9rem;">Waiting to start round...</div>
+      <div id="ctrlGame" class="host-controls" style="display:none;">
+        <button class="btn btn-primary" onclick="markResult(true)">✓ Correct! +<span id="pointsPreview">1</span></button>
+        <button class="btn btn-secondary" onclick="markResult(false)">✗ Skip</button>
+        <button class="btn btn-ghost" onclick="nextWord()" id="btnNextWord" style="display:none;">Next Word →</button>
       </div>
-
-      <div id="tvControlResult" class="host-controls" style="display:none">
-        <button class="btn btn-primary" onclick="markResult(true)">✓ Correct!</button>
-        <button class="btn btn-secondary" onclick="markResult(false)">✗ Skip / Wrong</button>
-      </div>
-
-      <div id="tvControlNext" style="display:none">
+      <div id="ctrlRoundDone" style="display:none;">
         <button class="btn btn-gold" onclick="nextRound()">Next Round →</button>
       </div>
-
-      <div id="tvControlDone" style="display:none">
+      <div id="ctrlGameDone" style="display:none;">
         <button class="btn btn-gold" onclick="endGame()">See Final Score 🏆</button>
-      </div>
-
-      <div id="tvControlWait" class="text-smoke" style="font-size:0.9rem">
-        Waiting for clues...
       </div>
     </div>
   </div>
 </div>
 
-<!-- 5. Student Join -->
+<!-- 5. Display view (TV big screen) -->
+<div id="screen-display" class="screen">
+  <div id="displayWaiting" style="text-align:center;">
+    <div style="font-size:3rem;margin-bottom:16px;">🔥</div>
+    <div class="display-waiting">Waiting for game to start...</div>
+    <div style="color:var(--smoke);font-size:1rem;margin-top:12px;" id="displayRoomCode"></div>
+  </div>
+  <div id="displayActive" style="display:none;flex-direction:column;align-items:center;gap:24px;width:100%;padding:40px;">
+    <div style="display:flex;align-items:center;gap:24px;width:100%;justify-content:space-between;">
+      <div>
+        <div style="font-size:0.8rem;color:var(--smoke);text-transform:uppercase;letter-spacing:1px;">Round <span id="displayRound">1</span> of 5</div>
+        <div class="display-hotseat" id="displayHotSeat">—</div>
+      </div>
+      <div class="level-badge" id="displayLevel" style="font-size:1rem;padding:8px 24px;">A1</div>
+      <div style="text-align:right;">
+        <div style="font-size:0.8rem;color:var(--smoke);text-transform:uppercase;letter-spacing:1px;">Team Score</div>
+        <div class="display-score">🏆 <span id="displayScore">0</span></div>
+      </div>
+    </div>
+    <div class="display-word-box">
+      <div class="display-word" id="displayWord">—</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:32px;">
+      <div class="display-timer" id="displayTimer">40</div>
+      <div style="color:var(--smoke);font-size:1.1rem;">seconds</div>
+    </div>
+    <div class="word-queue" id="displayWordQueue" style="max-width:700px;"></div>
+  </div>
+  <div id="displayResult" style="display:none;flex-direction:column;align-items:center;gap:20px;text-align:center;">
+    <div style="font-size:5rem;" id="displayResultIcon">🎉</div>
+    <div style="font-family:Syne,sans-serif;font-weight:800;font-size:4rem;" id="displayResultText">Correct!</div>
+    <div style="font-family:Syne,sans-serif;font-weight:800;font-size:3rem;color:var(--gold);" id="displayResultPoints">+1 pt</div>
+    <div style="color:var(--smoke);">Word: <strong style="color:var(--cream);" id="displayResultWord"></strong></div>
+  </div>
+</div>
+
+<!-- 6. Student Join -->
 <div id="screen-student-join" class="screen">
-  <div class="card">
+  <div class="card" style="width:100%;max-width:360px;margin:auto;display:flex;flex-direction:column;gap:20px;">
     <div class="join-logo"><span class="hot">🔥 HOT</span> SEAT</div>
     <div class="field" style="margin-bottom:0">
       <label>Room Code</label>
@@ -1094,1103 +366,657 @@ cohabitation</textarea>
   </div>
 </div>
 
-<!-- 6. Student Waiting Lobby -->
+<!-- 7. Student Waiting -->
 <div id="screen-student-waiting" class="screen">
-  <div class="waiting-pulse"></div>
-  <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.5rem;">You're in!</div>
-  <div class="text-smoke" id="waitingNickname"></div>
-  <div class="text-smoke" style="font-size:0.9rem;margin-top:8px;">Waiting for the teacher to start...</div>
+  <div class="waiting-pulse" style="margin:auto;"></div>
+  <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.5rem;text-align:center;">You're in!</div>
+  <div style="color:var(--smoke);text-align:center;" id="waitingNickname"></div>
+  <div style="color:var(--smoke);font-size:0.9rem;text-align:center;">Waiting for the teacher to start...</div>
 </div>
 
-<!-- 7. Student Clue Giving -->
-<div id="screen-student-clue" class="screen">
-  <div class="student-panel">
-    <div class="round-badge">🔥 Round <span id="studentRoundNum">1</span></div>
-    <div class="word-reveal-card">
-      <div class="word-reveal-label">The word to describe</div>
-      <div class="word-reveal-text" id="studentWord">—</div>
+<!-- 8. Student Word View -->
+<div id="screen-student-word" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:20px;text-align:center;">
+    <div class="level-badge" id="studentLevel">A1</div>
+    <div style="font-size:0.75rem;color:var(--smoke);text-transform:uppercase;letter-spacing:1px;">Round <span id="studentRound">1</span> · Word <span id="studentWordNum">1</span> of 15</div>
+    <div class="student-word-box">
+      <div class="student-word" id="studentWord">—</div>
     </div>
-    <div class="hot-seat-info">
-      🪑 <strong id="studentHotSeatName">—</strong> is in the Hot Seat
-    </div>
-    <div class="clue-input-area" id="clueInputArea">
-      <label>Your Clue</label>
-      <div class="clue-rules">One word only · No Thai · Can't use the word itself</div>
-      <input type="text" id="clueInput" placeholder="Type your clue..." maxlength="30" oninput="this.value=this.value.replace(/\s/g,'')" />
-      <button class="btn btn-primary" onclick="submitClue()">Submit Clue</button>
-    </div>
-    <div id="clueSubmitted" style="display:none">
-      <div class="submitted-ok">✓ Clue submitted! Watch the TV screen.</div>
-    </div>
-    <div id="clueDuplicate" style="display:none">
-      <div class="submitted-ok" style="border-color:rgba(255,77,0,0.3);color:var(--ember);background:rgba(255,77,0,0.08)">
-        ⚠️ Your clue matched someone else's — both are eliminated!
-      </div>
-    </div>
+    <div class="student-hotseat-info">🪑 <strong id="studentHotSeat">—</strong> is in the Hot Seat</div>
+    <div class="student-instruction">Say the meaning in Thai — don't say the English word!</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--fire);">⏱ <span id="studentTimer">40</span>s</div>
+    <div class="student-score">🏆 <span id="studentScore">0</span> pts</div>
   </div>
 </div>
 
-<!-- 8. Student Hot Seat Screen -->
+<!-- 9. Student Hot Seat -->
 <div id="screen-student-hotseat" class="screen">
   <div class="hotseat-fire">🔥</div>
-  <div class="hotseat-headline">You're in the<br><span class="text-fire">Hot Seat!</span></div>
-  <div class="hotseat-sub">Face away from the screen. Listen to the clues and make your best guess!</div>
+  <div class="hotseat-headline">You're in the<br><span style="color:var(--fire);">Hot Seat!</span></div>
+  <div class="hotseat-sub">Stand at the front. Listen to your classmates and guess the English word!</div>
+  <div class="student-score" style="margin-top:16px;">🏆 <span id="hotSeatScore">0</span> pts</div>
 </div>
 
-<!-- 9. Result Screen (host) -->
-<div id="screen-result" class="screen">
-  <div class="result-icon" id="resultIcon">🎉</div>
-  <div class="result-headline" id="resultHeadline">Correct!</div>
-  <div class="result-word" id="resultWord"></div>
-  <div class="points-gained" id="resultPoints">+3</div>
-  <div class="total-score-line">Team score: <strong id="resultTotalScore">0</strong> pts</div>
-</div>
-
-<!-- 10. Student waiting for result -->
-<div id="screen-student-result-wait" class="screen">
-  <div style="text-align:center;padding:40px 24px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px">
-    <div style="font-size:3rem">👀</div>
-    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.5rem">Clues are being given...</div>
-    <div class="text-smoke">Watch the TV screen!</div>
-    <div class="tv-score" style="font-size:2rem">🏆 <span id="studentScoreLive">0</span> pts</div>
-  </div>
-</div>
-
-<!-- 11. Game Over -->
+<!-- 10. Game Over -->
 <div id="screen-gameover" class="screen">
-  <div class="gameover-label">Final Score</div>
+  <div style="color:var(--smoke);font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;position:relative;z-index:1;">Final Score</div>
   <div class="gameover-score" id="gameoverScore">0</div>
-  <div class="gameover-title">Points!</div>
-  <p class="text-smoke" style="max-width:300px;position:relative;z-index:1">Great game, everyone. 🔥</p>
-  <button class="btn btn-primary" onclick="resetToLanding()" style="position:relative;z-index:1">Play Again</button>
+  <div class="gameover-title">Points! 🔥</div>
+  <p style="color:var(--smoke);max-width:300px;position:relative;z-index:1;">Great game, everyone!</p>
+  <button class="btn btn-primary" onclick="resetToLanding()" style="position:relative;z-index:1;">Play Again</button>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // AUDIO ENGINE
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 const Audio = (() => {
-  let ctx = null;
-  let bgGain = null;
-  let bgPlaying = false;
-  let bgSource = null;
-  let muted = false;
-
-  function getCtx() {
-    if (!ctx) {
-      ctx = new (window.AudioContext || window.webkitAudioContext)();
-      bgGain = ctx.createGain();
-      bgGain.gain.value = 0.18;
-      bgGain.connect(ctx.destination);
-    }
-    if (ctx.state === 'suspended') ctx.resume();
-    return ctx;
+  let ctx=null, bgGain=null, bgPlaying=false, bgSource=null, muted=false;
+  function getCtx(){
+    if(!ctx){ ctx=new(window.AudioContext||window.webkitAudioContext)(); bgGain=ctx.createGain(); bgGain.gain.value=0.18; bgGain.connect(ctx.destination); }
+    if(ctx.state==='suspended') ctx.resume(); return ctx;
   }
-
-  function master(vol = 0.4) {
-    const g = getCtx().createGain();
-    g.gain.value = muted ? 0 : vol;
-    g.connect(ctx.destination);
-    return g;
+  function master(vol=0.4){ const g=getCtx().createGain(); g.gain.value=muted?0:vol; g.connect(ctx.destination); return g; }
+  function correct(){
+    const c=getCtx(),g=master(0.45);
+    [523,659,784,1047].forEach((f,i)=>{ const o=c.createOscillator(),eg=c.createGain(); o.connect(eg);eg.connect(g); o.type='square';o.frequency.value=f; const t=c.currentTime+i*0.1; eg.gain.setValueAtTime(0,t);eg.gain.linearRampToValueAtTime(0.3,t+0.02);eg.gain.exponentialRampToValueAtTime(0.001,t+0.4); o.start(t);o.stop(t+0.45); });
+    setTimeout(()=>applause(),300);
   }
-
-  // ── CLUE SUBMITTED — quick upward ping ──
-  function clueIn() {
-    const c = getCtx();
-    const g = master(0.3);
-    [0, 80].forEach((delay, i) => {
-      const o = c.createOscillator();
-      const eg = c.createGain();
-      o.connect(eg); eg.connect(g);
-      o.type = 'sine';
-      o.frequency.value = 660 + i * 220;
-      const t = c.currentTime + delay / 1000;
-      eg.gain.setValueAtTime(0.4, t);
-      eg.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-      o.start(t); o.stop(t + 0.2);
-    });
+  function wrong(){ const c=getCtx(),g=master(0.35),o=c.createOscillator(),eg=c.createGain(); o.connect(eg);eg.connect(g); o.type='sawtooth'; const t=c.currentTime; o.frequency.setValueAtTime(400,t);o.frequency.exponentialRampToValueAtTime(120,t+0.5); eg.gain.setValueAtTime(0.4,t);eg.gain.exponentialRampToValueAtTime(0.001,t+0.55); o.start(t);o.stop(t+0.6); }
+  function applause(){
+    const c=getCtx(),dur=2.2,buf=c.createBuffer(2,c.sampleRate*dur,c.sampleRate);
+    for(let ch=0;ch<2;ch++){ const d=buf.getChannelData(ch); for(let i=0;i<d.length;i++){ const t=i/c.sampleRate,env=t<0.3?t/0.3:t<1.4?1:1-(t-1.4)/0.8; d[i]=(Math.random()*2-1)*env*0.6; } }
+    const src=c.createBufferSource();src.buffer=buf; const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=1800;f.Q.value=0.4; const f2=c.createBiquadFilter();f2.type='highpass';f2.frequency.value=600; const g=c.createGain();g.gain.value=muted?0:0.5; src.connect(f);f.connect(f2);f2.connect(g);g.connect(c.destination); src.start();
   }
-
-  // ── CLUE REVEALED — whoosh + note ──
-  function clueReveal() {
-    const c = getCtx();
-    const g = master(0.35);
-    const o = c.createOscillator();
-    const eg = c.createGain();
-    o.connect(eg); eg.connect(g);
-    o.type = 'triangle';
-    const t = c.currentTime;
-    o.frequency.setValueAtTime(300, t);
-    o.frequency.exponentialRampToValueAtTime(880, t + 0.12);
-    o.frequency.exponentialRampToValueAtTime(660, t + 0.25);
-    eg.gain.setValueAtTime(0.5, t);
-    eg.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-    o.start(t); o.stop(t + 0.4);
-    // noise whoosh
-    const buf = c.createBuffer(1, c.sampleRate * 0.15, c.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
-    const ns = c.createBufferSource();
-    ns.buffer = buf;
-    const nf = c.createBiquadFilter();
-    nf.type = 'bandpass'; nf.frequency.value = 2000; nf.Q.value = 0.8;
-    const ng = c.createGain(); ng.gain.value = muted ? 0 : 0.15;
-    ns.connect(nf); nf.connect(ng); ng.connect(c.destination);
-    ns.start(t);
+  function gameStart(){ const c=getCtx(),g=master(0.4); [0,150,300,450,600].forEach((ms,i)=>{ const o=c.createOscillator(),eg=c.createGain(); o.connect(eg);eg.connect(g); o.type=i%2===0?'sine':'triangle';o.frequency.value=330*Math.pow(1.3,i); const t=c.currentTime+ms/1000; eg.gain.setValueAtTime(0.35,t);eg.gain.exponentialRampToValueAtTime(0.001,t+0.3); o.start(t);o.stop(t+0.35); }); }
+  function hotSeatPicked(){
+    const c=getCtx(),g=master(0.4);
+    for(let i=0;i<12;i++){ const buf=c.createBuffer(1,c.sampleRate*0.05,c.sampleRate),data=buf.getChannelData(0); for(let j=0;j<data.length;j++) data[j]=Math.random()*2-1; const src=c.createBufferSource();src.buffer=buf; const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=200; const eg=c.createGain(); const t=c.currentTime+i*0.06; eg.gain.setValueAtTime(0.5,t);eg.gain.exponentialRampToValueAtTime(0.001,t+0.04); src.connect(f);f.connect(eg);eg.connect(g); src.start(t); }
+    const o=c.createOscillator(),eg=c.createGain(); o.connect(eg);eg.connect(g); o.type='sine';o.frequency.value=80; const t2=c.currentTime+0.75; eg.gain.setValueAtTime(0.6,t2);eg.gain.exponentialRampToValueAtTime(0.001,t2+0.4); o.start(t2);o.stop(t2+0.5);
   }
-
-  // ── CORRECT — fanfare ──
-  function correct() {
-    const c = getCtx();
-    const g = master(0.45);
-    const notes = [523, 659, 784, 1047];
-    notes.forEach((freq, i) => {
-      const o = c.createOscillator();
-      const eg = c.createGain();
-      o.connect(eg); eg.connect(g);
-      o.type = 'square';
-      o.frequency.value = freq;
-      const t = c.currentTime + i * 0.1;
-      eg.gain.setValueAtTime(0, t);
-      eg.gain.linearRampToValueAtTime(0.3, t + 0.02);
-      eg.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-      o.start(t); o.stop(t + 0.45);
-    });
-    // applause burst
-    setTimeout(() => applause(), 300);
+  function gameOver(){
+    const c=getCtx(),g=master(0.45);
+    [523,523,659,784,1047,784,1047].forEach((f,i)=>{ const o=c.createOscillator(),eg=c.createGain(); o.connect(eg);eg.connect(g); o.type=i<4?'square':'sine';o.frequency.value=f; const t=c.currentTime+i*0.13; eg.gain.setValueAtTime(0.35,t);eg.gain.exponentialRampToValueAtTime(0.001,t+0.25); o.start(t);o.stop(t+0.3); });
+    setTimeout(()=>applause(),600); setTimeout(()=>applause(),1400);
   }
-
-  // ── WRONG / SKIP — descending bwah ──
-  function wrong() {
-    const c = getCtx();
-    const g = master(0.35);
-    const o = c.createOscillator();
-    const eg = c.createGain();
-    o.connect(eg); eg.connect(g);
-    o.type = 'sawtooth';
-    const t = c.currentTime;
-    o.frequency.setValueAtTime(400, t);
-    o.frequency.exponentialRampToValueAtTime(120, t + 0.5);
-    eg.gain.setValueAtTime(0.4, t);
-    eg.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
-    o.start(t); o.stop(t + 0.6);
-  }
-
-  // ── APPLAUSE — noise burst shaped like crowd ──
-  function applause() {
-    const c = getCtx();
-    const duration = 2.2;
-    const buf = c.createBuffer(2, c.sampleRate * duration, c.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const data = buf.getChannelData(ch);
-      for (let i = 0; i < data.length; i++) {
-        const t = i / c.sampleRate;
-        const env = t < 0.3 ? t / 0.3 : t < 1.4 ? 1 : 1 - (t - 1.4) / 0.8;
-        data[i] = (Math.random() * 2 - 1) * env * 0.6;
-      }
-    }
-    const src = c.createBufferSource();
-    src.buffer = buf;
-    const f = c.createBiquadFilter();
-    f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 0.4;
-    const f2 = c.createBiquadFilter();
-    f2.type = 'highpass'; f2.frequency.value = 600;
-    const g = c.createGain(); g.gain.value = muted ? 0 : 0.5;
-    src.connect(f); f.connect(f2); f2.connect(g); g.connect(c.destination);
-    src.start();
-  }
-
-  // ── GAME START — rising sweep ──
-  function gameStart() {
-    const c = getCtx();
-    const g = master(0.4);
-    [0, 150, 300, 450, 600].forEach((ms, i) => {
-      const o = c.createOscillator();
-      const eg = c.createGain();
-      o.connect(eg); eg.connect(g);
-      o.type = i % 2 === 0 ? 'sine' : 'triangle';
-      o.frequency.value = 330 * Math.pow(1.3, i);
-      const t = c.currentTime + ms / 1000;
-      eg.gain.setValueAtTime(0.35, t);
-      eg.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-      o.start(t); o.stop(t + 0.35);
-    });
-  }
-
-  // ── HOT SEAT PICKED — dramatic tension drum ──
-  function hotSeatPicked() {
-    const c = getCtx();
-    const g = master(0.4);
-    // drum roll
-    for (let i = 0; i < 12; i++) {
-      const buf = c.createBuffer(1, c.sampleRate * 0.05, c.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let j = 0; j < data.length; j++) data[j] = Math.random() * 2 - 1;
-      const src = c.createBufferSource(); src.buffer = buf;
-      const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 200;
-      const eg = c.createGain();
-      const t = c.currentTime + i * 0.06;
-      eg.gain.setValueAtTime(0.5, t); eg.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-      src.connect(f); f.connect(eg); eg.connect(g);
-      src.start(t);
-    }
-    // final hit
-    const o = c.createOscillator();
-    const eg = c.createGain();
-    o.connect(eg); eg.connect(g);
-    o.type = 'sine'; o.frequency.value = 80;
-    const t2 = c.currentTime + 0.75;
-    eg.gain.setValueAtTime(0.6, t2); eg.gain.exponentialRampToValueAtTime(0.001, t2 + 0.4);
-    o.start(t2); o.stop(t2 + 0.5);
-  }
-
-  // ── DUPLICATE CLUE — comedic boing ──
-  function duplicate() {
-    const c = getCtx();
-    const g = master(0.3);
-    const o = c.createOscillator();
-    const eg = c.createGain();
-    o.connect(eg); eg.connect(g);
-    o.type = 'sine';
-    const t = c.currentTime;
-    o.frequency.setValueAtTime(800, t);
-    o.frequency.exponentialRampToValueAtTime(200, t + 0.3);
-    o.frequency.exponentialRampToValueAtTime(600, t + 0.5);
-    eg.gain.setValueAtTime(0.4, t); eg.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
-    o.start(t); o.stop(t + 0.6);
-  }
-
-  // ── GAME OVER — big finale ──
-  function gameOver() {
-    const c = getCtx();
-    const g = master(0.45);
-    const melody = [523, 523, 659, 784, 1047, 784, 1047];
-    melody.forEach((freq, i) => {
-      const o = c.createOscillator();
-      const eg = c.createGain();
-      o.connect(eg); eg.connect(g);
-      o.type = i < 4 ? 'square' : 'sine';
-      o.frequency.value = freq;
-      const t = c.currentTime + i * 0.13;
-      eg.gain.setValueAtTime(0.35, t); eg.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-      o.start(t); o.stop(t + 0.3);
-    });
-    setTimeout(() => applause(), 600);
-    setTimeout(() => applause(), 1400);
-  }
-
-  // ── BACKGROUND LOOP — upbeat classroom vibe ──
-  function startBg() {
-    if (bgPlaying || muted) return;
-    bgPlaying = true;
-    const c = getCtx();
-    const bpm = 128;
-    const beat = 60 / bpm;
-
-    // Bass pattern
-    const bassNotes = [130, 130, 174, 130, 116, 130, 155, 130];
-    // Hi-hat pattern
-    function scheduleLoop(startTime) {
-      bassNotes.forEach((freq, i) => {
-        const o = c.createOscillator();
-        const eg = c.createGain();
-        o.connect(eg); eg.connect(bgGain);
-        o.type = 'sine'; o.frequency.value = freq;
-        const t = startTime + i * beat * 0.5;
-        eg.gain.setValueAtTime(0.5, t); eg.gain.exponentialRampToValueAtTime(0.001, t + beat * 0.45);
-        o.start(t); o.stop(t + beat * 0.5);
-      });
-      // hi-hat
-      for (let i = 0; i < 16; i++) {
-        const buf = c.createBuffer(1, c.sampleRate * 0.05, c.sampleRate);
-        const data = buf.getChannelData(0);
-        for (let j = 0; j < data.length; j++) data[j] = Math.random() * 2 - 1;
-        const src = c.createBufferSource(); src.buffer = buf;
-        const f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 8000;
-        const eg = c.createGain();
-        const t = startTime + i * beat * 0.25;
-        eg.gain.setValueAtTime(i % 4 === 0 ? 0.25 : 0.1, t);
-        eg.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-        src.connect(f); f.connect(eg); eg.connect(bgGain);
-        src.start(t);
-      }
-      // chord stabs
-      const chords = [[261,329,392],[261,311,392],[261,329,415],[245,309,370]];
-      chords.forEach((chord, ci) => {
-        chord.forEach(freq => {
-          const o = c.createOscillator();
-          const eg = c.createGain();
-          o.connect(eg); eg.connect(bgGain);
-          o.type = 'triangle'; o.frequency.value = freq * 2;
-          const t = startTime + ci * beat;
-          eg.gain.setValueAtTime(0.15, t); eg.gain.exponentialRampToValueAtTime(0.001, t + beat * 0.6);
-          o.start(t); o.stop(t + beat * 0.7);
-        });
-      });
-
-      const loopDuration = beat * 4;
-      bgSource = setTimeout(() => { if (bgPlaying) scheduleLoop(c.currentTime); }, loopDuration * 950);
+  function timerTick(){ const c=getCtx(),g=master(0.15),o=c.createOscillator(),eg=c.createGain(); o.connect(eg);eg.connect(g); o.type='sine';o.frequency.value=440; const t=c.currentTime; eg.gain.setValueAtTime(0.2,t);eg.gain.exponentialRampToValueAtTime(0.001,t+0.08); o.start(t);o.stop(t+0.1); }
+  function timerUrgent(){ const c=getCtx(),g=master(0.2),o=c.createOscillator(),eg=c.createGain(); o.connect(eg);eg.connect(g); o.type='sine';o.frequency.value=660; const t=c.currentTime; eg.gain.setValueAtTime(0.3,t);eg.gain.exponentialRampToValueAtTime(0.001,t+0.1); o.start(t);o.stop(t+0.12); }
+  function startBg(){
+    if(bgPlaying||muted) return; bgPlaying=true; const c=getCtx(),bpm=128,beat=60/bpm;
+    const bassNotes=[130,130,174,130,116,130,155,130];
+    function scheduleLoop(startTime){
+      bassNotes.forEach((freq,i)=>{ const o=c.createOscillator(),eg=c.createGain(); o.connect(eg);eg.connect(bgGain); o.type='sine';o.frequency.value=freq; const t=startTime+i*beat*0.5; eg.gain.setValueAtTime(0.5,t);eg.gain.exponentialRampToValueAtTime(0.001,t+beat*0.45); o.start(t);o.stop(t+beat*0.5); });
+      for(let i=0;i<16;i++){ const buf=c.createBuffer(1,c.sampleRate*0.05,c.sampleRate),data=buf.getChannelData(0); for(let j=0;j<data.length;j++) data[j]=Math.random()*2-1; const src=c.createBufferSource();src.buffer=buf; const f=c.createBiquadFilter();f.type='highpass';f.frequency.value=8000; const eg=c.createGain(); const t=startTime+i*beat*0.25; eg.gain.setValueAtTime(i%4===0?0.25:0.1,t);eg.gain.exponentialRampToValueAtTime(0.001,t+0.04); src.connect(f);f.connect(eg);eg.connect(bgGain); src.start(t); }
+      [[261,329,392],[261,311,392],[261,329,415],[245,309,370]].forEach((chord,ci)=>{ chord.forEach(freq=>{ const o=c.createOscillator(),eg=c.createGain(); o.connect(eg);eg.connect(bgGain); o.type='triangle';o.frequency.value=freq*2; const t=startTime+ci*beat; eg.gain.setValueAtTime(0.15,t);eg.gain.exponentialRampToValueAtTime(0.001,t+beat*0.6); o.start(t);o.stop(t+beat*0.7); }); });
+      bgSource=setTimeout(()=>{ if(bgPlaying) scheduleLoop(c.currentTime); },beat*4*950);
     }
     scheduleLoop(c.currentTime);
   }
-
-  function stopBg() {
-    bgPlaying = false;
-    if (bgSource) { clearTimeout(bgSource); bgSource = null; }
-  }
-
-  function toggleMute() {
-    muted = !muted;
-    if (ctx && bgGain) bgGain.gain.value = muted ? 0 : 0.18;
-    return muted;
-  }
-
-  return { clueIn, clueReveal, correct, wrong, applause, gameStart, hotSeatPicked, duplicate, gameOver, startBg, stopBg, toggleMute, getCtx };
+  function stopBg(){ bgPlaying=false; if(bgSource){clearTimeout(bgSource);bgSource=null;} }
+  function toggleMute(){ muted=!muted; if(ctx&&bgGain) bgGain.gain.value=muted?0:0.18; return muted; }
+  return{correct,wrong,applause,gameStart,hotSeatPicked,gameOver,timerTick,timerUrgent,startBg,stopBg,toggleMute,getCtx};
 })();
 
-// ═══════════════════════════════════════════
-// SUPABASE CONFIG — replace with your own
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════
 const SUPABASE_URL = 'https://ekleolcjjpgsvlqyivyy.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_B0yJw0--56jd012N5PaFcA_z2ay1TIz';
-
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
-let state = {
-  role: null,         // 'host' | 'student'
-  roomCode: null,
-  gameId: null,
-  myId: null,
-  myNickname: null,
-  players: [],
-  currentRound: null,
-  totalRounds: 10,
-  teamScore: 0,
-  wordBank: [],
-  usedWords: [],
-  cluesRevealed: 0,
-  cluesAll: [],
-  hotSeatPlayerId: null,
-  channel: null,
+// ═══════════════════════════════════
+// WORD BANK — 75 unique words
+// ═══════════════════════════════════
+const WORDS = {
+  A1: ['mother','father','sister','brother','son','daughter','baby','family','home','love','friend','old','young','happy','sad','name','live','born','die','play','eat','sleep','talk','help','give','share','smile','cry','hug','kiss'],
+  A2: ['married','divorced','pregnant','adopted','engaged','stepmother','stepfather','sibling','relative','guardian','lonely','jealous','caring','stubborn','generous'],
+  B1: ['widower','ancestry','inheritance','custody','reconciled','estranged','dependent','rebellious','supportive','affectionate','trustworthy','compassionate','neglected','fostered','overprotective'],
+  B2: ['patriarch','matriarch','genealogy','lineage','bereavement','surrogate','alimony','annulment','cohabitation','illegitimate'],
+  C1: ['consanguinity','primogeniture','filial','miscegenation','nepotism']
 };
 
-// ═══════════════════════════════════════════
-// SCREEN NAVIGATION
-// ═══════════════════════════════════════════
-function goTo(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+// Round definitions — [level, count] pairs, no word repeats across all rounds
+const ROUND_DEFS = [
+  [{level:'A1',count:15}],
+  [{level:'A1',count:10},{level:'A2',count:5}],
+  [{level:'A1',count:5},{level:'A2',count:5},{level:'B1',count:5}],
+  [{level:'A2',count:5},{level:'B1',count:5},{level:'B2',count:5}],
+  [{level:'B1',count:5},{level:'B2',count:5},{level:'C1',count:5}],
+];
+
+function buildRounds() {
+  // Shuffle each level's pool
+  const pools = {};
+  for(const [level, words] of Object.entries(WORDS)) {
+    pools[level] = [...words].sort(()=>Math.random()-0.5);
+  }
+  const rounds = [];
+  for(const roundDef of ROUND_DEFS) {
+    const words = [];
+    for(const {level, count} of roundDef) {
+      for(let i=0;i<count;i++) {
+        const w = pools[level].shift();
+        if(w) words.push({word:w, level});
+      }
+    }
+    // Shuffle within round
+    words.sort(()=>Math.random()-0.5);
+    rounds.push(words);
+  }
+  return rounds;
 }
 
-// ═══════════════════════════════════════════
-// URL MODE DETECTION
-// ═══════════════════════════════════════════
-(function() {
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+let state = {
+  role: null, roomCode: null, gameId: null,
+  myId: null, myNickname: null, players: [],
+  channel: null,
+  // game state
+  currentRound: 0, currentWordIdx: 0,
+  rounds: [], teamScore: 0,
+  timerInterval: null, timerSeconds: 40,
+  hotSeatPlayerId: null,
+};
+
+// ═══════════════════════════════════
+// UTILS
+// ═══════════════════════════════════
+function goTo(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function showToast(msg,dur=2500){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),dur); }
+function toggleMute(){ const m=Audio.toggleMute(); document.getElementById('muteBtn').textContent=m?'🔇':'🔊'; }
+function levelClass(level){ return 'level-'+level; }
+function pointsForLevel(level){ return {A1:1,A2:2,B1:3,B2:4,C1:5}[level]||1; }
+
+// ═══════════════════════════════════
+// URL DETECTION
+// ═══════════════════════════════════
+(function(){
   const params = new URLSearchParams(window.location.search);
-  const isJoinMode = params.has('join');
-  if (isJoinMode) {
-    // Hide host button, go straight to join screen
-    const hostBtn = document.getElementById('hostBtn');
-    if (hostBtn) hostBtn.style.display = 'none';
-    goTo('screen-student-join');
-    // Pre-fill room code if passed as ?join=A3F9
-    const code = params.get('join');
-    if (code && code.length === 4) {
-      document.getElementById('joinCode').value = code.toUpperCase();
+  if(params.has('display')){
+    goTo('screen-display');
+    const code = params.get('display');
+    if(code && code.length===4){
+      document.getElementById('displayRoomCode').textContent = 'Room: '+code;
+      state.roomCode = code;
+      state.role = 'display';
+      connectDisplay(code);
     }
+    return;
+  }
+  if(params.has('join')){
+    const hostBtn = document.getElementById('hostBtn');
+    if(hostBtn) hostBtn.style.display='none';
+    goTo('screen-student-join');
+    const code = params.get('join');
+    if(code && code.length===4) document.getElementById('joinCode').value=code.toUpperCase();
   }
 })();
 
-function showToast(msg, duration = 2500) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), duration);
-}
-
-// ═══════════════════════════════════════════
-// WORD COUNT + SHUFFLE PREVIEW
-// ═══════════════════════════════════════════
-function parseWords(raw) {
-  return raw.split('\n').map(w => w.trim()).filter(w => w.length > 0);
-}
-
-function updateWordCount() {
-  const words = parseWords(document.getElementById('wordBankInput').value);
-  document.getElementById('wordCount').textContent = `${words.length} word${words.length !== 1 ? 's' : ''}`;
-  // Refresh preview if it's open
-  if (document.getElementById('shufflePreview').style.display !== 'none') {
-    renderPreview(words);
-  }
-}
-
-function togglePreview() {
-  const el = document.getElementById('shufflePreview');
-  if (el.style.display === 'none') {
-    el.style.display = 'block';
-    reshufflePreview();
-  } else {
-    el.style.display = 'none';
-  }
-}
-
-function reshufflePreview() {
-  const words = parseWords(document.getElementById('wordBankInput').value);
-  renderPreview(words);
-}
-
-function renderPreview(words) {
-  const rounds = parseInt(document.getElementById('roundsSelect').value) || 10;
-  document.getElementById('previewRoundCount').textContent = Math.min(rounds, words.length);
-  // Fisher-Yates shuffle copy
-  const shuffled = [...words];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  const preview = shuffled.slice(0, rounds);
-  document.getElementById('previewList').innerHTML = preview.map((w, i) =>
-    `<span style="background:var(--ash);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:4px 12px;font-size:0.82rem;display:inline-flex;align-items:center;gap:6px;">
-      <span style="font-size:0.7rem;color:var(--smoke);">${i + 1}</span>
-      <span>${w}</span>
-    </span>`
-  ).join('');
-}
-
-const wordBankEl = document.getElementById('wordBankInput');
-wordBankEl.addEventListener('input', updateWordCount);
-wordBankEl.addEventListener('change', updateWordCount);
-wordBankEl.addEventListener('paste', () => setTimeout(updateWordCount, 0));
-document.getElementById('roundsSelect').addEventListener('change', () => {
-  if (document.getElementById('shufflePreview').style.display !== 'none') {
-    reshufflePreview();
-  }
-});
-
-// ═══════════════════════════════════════════
-// GENERATE ROOM CODE
-// ═══════════════════════════════════════════
-function genCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({length:4}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
-}
-
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // HOST: CREATE GAME
-// ═══════════════════════════════════════════
-async function createGame() {
-  const words = parseWords(document.getElementById('wordBankInput').value);
-  if (words.length < 3) { showToast('Add at least 3 words'); return; }
-
-  const rounds = parseInt(document.getElementById('roundsSelect').value);
-  const hostName = document.getElementById('hostName').value.trim() || 'Teacher';
+// ═══════════════════════════════════
+async function createGame(){
+  const hostName = document.getElementById('hostName').value.trim()||'Teacher';
   const code = genCode();
+  const rounds = buildRounds();
 
-  const { data, error } = await db.from('hotseat_games').insert({
-    room_code: code,
-    status: 'lobby',
-    word_bank: words,
-    total_rounds: rounds,
-    current_round: 0,
-    team_score: 0,
-    hot_seat_player_id: null,
-    current_word: null,
-    clues: [],
-    clues_revealed: 0,
-    used_words: [],
+  const {data,error} = await db.from('hotseat_games').insert({
+    room_code: code, status:'lobby',
+    rounds: rounds, current_round:0, current_word_idx:0,
+    team_score:0, hot_seat_player_id:null,
+    timer_seconds:40, word_bank:[], used_words:[],
+    clues:[], clues_revealed:0,
   }).select().single();
 
-  if (error) { showToast('Error creating game: ' + error.message); return; }
+  if(error){ showToast('Error: '+error.message); return; }
 
-  state.role = 'host';
-  state.roomCode = code;
-  state.gameId = data.id;
-  state.totalRounds = rounds;
-  state.wordBank = words;
-  state.myNickname = hostName;
-  state.myId = 'host';
+  state.role='host'; state.roomCode=code; state.gameId=data.id;
+  state.rounds=rounds; state.myId='host'; state.myNickname=hostName;
 
-  // Build student join URL + QR code
-  const baseUrl = window.location.origin + window.location.pathname;
+  await db.from('hotseat_players').insert({game_id:data.id,player_id:'host',nickname:hostName,is_host:true,clue_submitted:false,clue_text:null,clue_eliminated:false});
+
+  const baseUrl = window.location.origin+window.location.pathname;
   const joinUrl = `${baseUrl}?join=${code}`;
-  document.getElementById('joinUrl').innerHTML =
-    `<span style="color:var(--smoke);font-size:0.8rem;">Scan to join · or go to</span><br>
-     <span style="color:var(--cream);font-size:0.82rem;word-break:break-all;">${joinUrl}</span>`;
-  // Generate QR code
-  document.getElementById('lobbyQR').innerHTML = '';
-  new QRCode(document.getElementById('lobbyQR'), {
-    text: joinUrl,
-    width: 160,
-    height: 160,
-    colorDark: '#1A1209',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.M
-  });
+  const displayUrl = `${baseUrl}?display=${code}`;
 
-  // Add host as a player
-  await db.from('hotseat_players').insert({
-    game_id: data.id,
-    player_id: 'host',
-    nickname: hostName,
-    is_host: true,
-    clue_submitted: false,
-    clue_text: null,
-    clue_eliminated: false,
-  });
+  document.getElementById('lobbyCode').textContent=code;
+  document.getElementById('joinUrl').innerHTML=
+    `Students: <strong style="color:var(--cream)">${joinUrl}</strong><br>
+     TV screen: <strong style="color:var(--gold)">${displayUrl}</strong>`;
 
-  document.getElementById('lobbyCode').textContent = code;
-  document.getElementById('joinUrl').textContent = window.location.href;
+  document.getElementById('lobbyQR').innerHTML='';
+  new QRCode(document.getElementById('lobbyQR'),{text:joinUrl,width:140,height:140,colorDark:'#1A1209',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+
+  Audio.getCtx();
   goTo('screen-host-lobby');
-  Audio.getCtx(); // unlock audio context on user gesture
   subscribeToGame();
 }
 
-// ═══════════════════════════════════════════
-// STUDENT: JOIN GAME
-// ═══════════════════════════════════════════
-async function joinGame() {
-  const code = document.getElementById('joinCode').value.trim().toUpperCase();
-  const nick = document.getElementById('joinNickname').value.trim();
-  if (!code || code.length !== 4) { showToast('Enter a 4-letter room code'); return; }
-  if (!nick) { showToast('Enter a nickname'); return; }
+function genCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; return Array.from({length:4},()=>c[Math.floor(Math.random()*c.length)]).join(''); }
 
-  const { data: game, error } = await db.from('hotseat_games')
-    .select().eq('room_code', code).single();
-
-  if (error || !game) { showToast('Room not found'); return; }
-  if (game.status === 'ended') { showToast('This game has ended'); return; }
-
-  state.role = 'student';
-  state.roomCode = code;
-  state.gameId = game.id;
-  state.myId = 'player_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
-  state.myNickname = nick;
-  state.currentRound = game.current_round;
-  state.teamScore = game.team_score;
-
-  const { error: pe } = await db.from('hotseat_players').insert({
-    game_id: game.id,
-    player_id: state.myId,
-    nickname: nick,
-    is_host: false,
-    clue_submitted: false,
-    clue_text: null,
-    clue_eliminated: false,
-  });
-  if (pe) { showToast('Could not join: ' + pe.message); return; }
-
-  document.getElementById('waitingNickname').textContent = nick;
-
-  // If game already in progress
-  if (game.status === 'playing') {
-    handleGameState(game);
-  } else {
-    goTo('screen-student-waiting');
-  }
-
-  subscribeToGame();
-}
-
-// ═══════════════════════════════════════════
-// SUBSCRIBE TO REAL-TIME GAME UPDATES
-// ═══════════════════════════════════════════
-function subscribeToGame() {
-  // Listen to game row changes
-  state.channel = db.channel('hotseat_' + state.gameId)
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'hotseat_games',
-      filter: `id=eq.${state.gameId}`
-    }, payload => {
-      handleGameState(payload.new);
-    })
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'hotseat_players',
-      filter: `game_id=eq.${state.gameId}`
-    }, payload => {
-      if (state.role === 'host') {
-        refreshPlayerList();
-      }
-    })
-    .subscribe();
-}
-
-// ═══════════════════════════════════════════
-// REFRESH PLAYER LIST (HOST)
-// ═══════════════════════════════════════════
-async function refreshPlayerList() {
-  const { data } = await db.from('hotseat_players')
-    .select().eq('game_id', state.gameId).eq('is_host', false);
-
-  state.players = data || [];
-  const currentScreen = document.querySelector('.screen.active')?.id;
-
-  if (currentScreen === 'screen-host-lobby') {
-    renderLobbyPlayers();
-    const btn = document.getElementById('startGameBtn');
-    btn.disabled = state.players.length < 1;
-    btn.textContent = state.players.length < 1
-      ? 'Waiting for players...'
-      : `Start Game (${state.players.length} player${state.players.length !== 1 ? 's' : ''})`;
-  } else if (currentScreen === 'screen-host-tv') {
-    renderTvPlayerList();
-  }
-}
-
-function renderLobbyPlayers() {
-  const el = document.getElementById('lobbyPlayers');
-  if (state.players.length === 0) {
-    el.innerHTML = '<div class="text-smoke" style="font-size:0.9rem;">Waiting for players to join...</div>';
-    return;
-  }
-  el.innerHTML = state.players.map(p =>
-    `<div class="lobby-player-tag">👤 ${p.nickname}</div>`
-  ).join('');
-}
-
-function renderTvPlayerList() {
-  const el = document.getElementById('tvPlayerList');
-  el.innerHTML = state.players.map(p => {
-    const isHotSeat = p.player_id === state.hotSeatPlayerId;
-    const clueData = state.cluesAll.find(c => c.player_id === p.player_id);
-    const submitted = clueData?.submitted;
-    let cls = isHotSeat ? 'hotseat' : (submitted ? 'submitted' : '');
-    return `<div class="player-chip ${cls}">
-      <div class="player-dot"></div>
-      <span>${p.nickname}</span>
-      ${isHotSeat ? '<span class="text-gold" style="margin-left:auto;font-size:0.75rem">🔥 SEAT</span>' : ''}
-    </div>`;
-  }).join('');
-}
-
-// ═══════════════════════════════════════════
-// HANDLE GAME STATE CHANGES
-// ═══════════════════════════════════════════
-async function handleGameState(game) {
-  state.currentRound = game.current_round;
-  state.teamScore = game.team_score;
-  state.cluesAll = game.clues || [];
-  state.hotSeatPlayerId = game.hot_seat_player_id;
-  state.cluesRevealed = game.clues_revealed || 0;
-
-  // Update score display for students
-  document.getElementById('studentScoreLive').textContent = game.team_score;
-
-  if (game.status === 'lobby') return;
-
-  if (game.status === 'ended') {
-    document.getElementById('gameoverScore').textContent = game.team_score;
-    goTo('screen-gameover');
-    return;
-  }
-
-  if (game.status === 'result') {
-    if (state.role === 'host') {
-      showResult(game);
-    } else {
-      goTo('screen-student-result-wait');
-      document.getElementById('studentScoreLive').textContent = game.team_score;
-    }
-    return;
-  }
-
-  if (game.status === 'playing') {
-    if (state.role === 'host') {
-      showHostTv(game);
-    } else {
-      if (game.hot_seat_player_id === state.myId) {
-        goTo('screen-student-hotseat');
-      } else {
-        showStudentClue(game);
-      }
-    }
-  }
-}
-
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // HOST: START GAME
-// ═══════════════════════════════════════════
-async function startGame() {
+// ═══════════════════════════════════
+async function startGame(){
   await refreshPlayerList();
-  if (state.players.length < 1) { showToast('Need at least 1 player'); return; }
-  Audio.gameStart();
-  Audio.startBg();
-  await beginRound();
+  if(state.players.length<1){ showToast('Need at least 1 player'); return; }
+  Audio.gameStart(); Audio.startBg();
+  await beginRound(0);
 }
 
-async function beginRound() {
-  // Pick random word not yet used
-  await loadGameData();
-  const available = state.wordBank.filter(w => !state.usedWords.includes(w));
-  if (available.length === 0) {
-    showToast('Out of words! Game ending.');
-    await endGame();
-    return;
-  }
-  const word = available[Math.floor(Math.random() * available.length)];
-
-  // Pick random hot seat (not host)
+async function beginRound(roundIdx){
   await refreshPlayerList();
-  const nonHot = state.players;
-  const hotSeat = nonHot[Math.floor(Math.random() * nonHot.length)];
-
-  const nextRound = (state.currentRound || 0) + 1;
-
-  // Reset clues for all non-hot-seat players
-  const clueSlots = nonHot
-    .filter(p => p.player_id !== hotSeat.player_id)
-    .map(p => ({ player_id: p.player_id, nickname: p.nickname, submitted: false, clue: '', eliminated: false }));
+  const nonHost = state.players;
+  if(nonHost.length===0){ showToast('No players!'); return; }
+  const hotSeat = nonHost[roundIdx % nonHost.length];
 
   Audio.hotSeatPicked();
+
   await db.from('hotseat_games').update({
-    status: 'playing',
-    current_round: nextRound,
-    current_word: word,
-    hot_seat_player_id: hotSeat.player_id,
-    clues: clueSlots,
-    clues_revealed: 0,
-    used_words: [...(state.usedWords || []), word],
-  }).eq('id', state.gameId);
+    status:'playing', current_round:roundIdx,
+    current_word_idx:0, hot_seat_player_id:hotSeat.player_id,
+    team_score:state.teamScore,
+  }).eq('id',state.gameId);
 }
 
-async function loadGameData() {
-  const { data } = await db.from('hotseat_games').select().eq('id', state.gameId).single();
-  if (data) {
-    state.wordBank = data.word_bank;
-    state.usedWords = data.used_words || [];
-    state.currentRound = data.current_round;
-    state.teamScore = data.team_score;
-  }
-}
-
-// ═══════════════════════════════════════════
-// HOST: SHOW TV GAME SCREEN
-// ═══════════════════════════════════════════
-async function showHostTv(game) {
+// ═══════════════════════════════════
+// HOST: SHOW TV
+// ═══════════════════════════════════
+async function showHostTv(game){
   goTo('screen-host-tv');
+  state.currentRound = game.current_round;
+  state.currentWordIdx = game.current_word_idx;
+  state.hotSeatPlayerId = game.hot_seat_player_id;
+  state.rounds = game.rounds;
+  state.teamScore = game.team_score;
+
   document.getElementById('tvRoomCode').textContent = state.roomCode;
-  document.getElementById('tvRoundNum').textContent = game.current_round;
-  document.getElementById('tvRoundTotal').textContent = game.total_rounds;
+  document.getElementById('tvRoundNum').textContent = game.current_round+1;
   document.getElementById('tvScore').textContent = game.team_score;
+  document.getElementById('tvScoreSide').textContent = game.team_score;
 
-  // Get hot seat player name
   await refreshPlayerList();
-  const hotSeatPlayer = state.players.find(p => p.player_id === game.hot_seat_player_id);
-  document.getElementById('tvHotSeatName').textContent = hotSeatPlayer?.nickname || '?';
-  document.getElementById('tvTargetWord').textContent = game.current_word?.toUpperCase() || '—';
+  const hs = state.players.find(p=>p.player_id===game.hot_seat_player_id);
+  document.getElementById('tvHotSeatName').textContent = hs?.nickname||'?';
 
-  document.getElementById('tvPhaseWaiting').style.display = 'none';
-  document.getElementById('tvPhaseActive').style.display = 'flex';
-  document.getElementById('tvPhaseActive').style.flexDirection = 'column';
-  document.getElementById('tvPhaseActive').style.alignItems = 'center';
-
-  // Render revealed clues
-  renderRevealedClues(game.clues, game.clues_revealed);
-
-  // Check clue submission status
-  const submittedClues = game.clues.filter(c => c.submitted);
-  const totalClueGivers = game.clues.length;
-  const allSubmitted = submittedClues.length === totalClueGivers;
-
-  document.getElementById('cluesSubmittedCount').textContent =
-    `${submittedClues.length} / ${totalClueGivers} clues submitted`;
-
-  // Update clue dots
-  const dotsEl = document.getElementById('tvCluesDots');
-  dotsEl.innerHTML = game.clues.map(c =>
-    c.submitted ? `<div class="clue-dot" title="${c.nickname}"></div>` : ''
-  ).join('');
-
-  renderTvPlayerList();
-
-  // Show appropriate controls
-  const hasUnrevealed = game.clues_revealed < submittedClues.filter(c => !c.eliminated).length;
-
-  document.getElementById('tvControlWait').style.display = allSubmitted ? 'none' : 'block';
-  document.getElementById('tvControlReveal').style.display = allSubmitted ? 'flex' : 'none';
-  document.getElementById('tvControlResult').style.display = 'none';
-  document.getElementById('tvControlNext').style.display = 'none';
-  document.getElementById('tvControlDone').style.display = 'none';
-
-  if (allSubmitted) {
-    const validClues = game.clues.filter(c => c.submitted && !c.eliminated);
-    const remaining = validClues.length - game.clues_revealed;
-    document.getElementById('cluesLeftLabel').textContent =
-      remaining > 0 ? `${remaining} clue${remaining !== 1 ? 's' : ''} left` : 'All clues revealed';
-
-    if (game.clues_revealed >= validClues.length) {
-      // All clues revealed, show result buttons
-      document.getElementById('tvControlReveal').style.display = 'none';
-      document.getElementById('tvControlResult').style.display = 'flex';
-    }
-  }
+  updateRoundProgress(game.current_round);
+  showCurrentWord(game);
+  startTimer();
 }
 
-function renderRevealedClues(clues, revealedCount) {
-  const list = document.getElementById('tvClueList');
-  const submitted = clues.filter(c => c.submitted);
-  const toShow = submitted.slice(0, revealedCount);
-  list.innerHTML = toShow.map(c => `
-    <li class="clue-reveal-item">
-      <span class="clue-from">${c.nickname}</span>
-      <span class="clue-text ${c.eliminated ? 'clue-eliminated' : ''}">${c.clue}</span>
-      ${c.eliminated ? '<span class="clue-eliminated-badge">×2 eliminated</span>' : ''}
-    </li>
-  `).join('');
-}
+function showCurrentWord(game){
+  const round = game.rounds[game.current_round];
+  const wordObj = round[game.current_word_idx];
 
-// ═══════════════════════════════════════════
-// HOST: REVEAL NEXT CLUE
-// ═══════════════════════════════════════════
-async function revealNextClue() {
-  const { data: game } = await db.from('hotseat_games').select().eq('id', state.gameId).single();
-  const validClues = game.clues.filter(c => c.submitted && !c.eliminated);
-  const newRevealed = game.clues_revealed + 1;
+  document.getElementById('stageWaiting').style.display='none';
+  document.getElementById('stageActive').style.display='flex';
 
-  await db.from('hotseat_games').update({ clues_revealed: newRevealed }).eq('id', state.gameId);
+  document.getElementById('tvWord').textContent = wordObj.word.toUpperCase();
+  const badge = document.getElementById('tvLevelBadge');
+  badge.textContent = wordObj.level;
+  badge.className = 'level-badge '+levelClass(wordObj.level);
 
-  state.cluesRevealed = newRevealed;
-  Audio.clueReveal();
-  renderRevealedClues(game.clues, newRevealed);
+  // Word queue
+  const queue = document.getElementById('tvWordQueue');
+  queue.innerHTML = round.map((w,i)=>{
+    let cls = 'word-chip';
+    if(i<game.current_word_idx) cls+=' done';
+    if(i===game.current_word_idx) cls+=' current';
+    return `<span class="${cls}">${w.word}</span>`;
+  }).join('');
 
-  const remaining = validClues.length - newRevealed;
-  document.getElementById('cluesLeftLabel').textContent =
-    remaining > 0 ? `${remaining} clue${remaining !== 1 ? 's' : ''} left` : 'All clues revealed';
-
-  if (newRevealed >= validClues.length) {
-    document.getElementById('tvControlReveal').style.display = 'none';
-    document.getElementById('tvControlResult').style.display = 'flex';
-  }
-}
-
-// ═══════════════════════════════════════════
-// HOST: MARK RESULT
-// ═══════════════════════════════════════════
-async function markResult(correct) {
-  if (correct) { Audio.correct(); } else { Audio.wrong(); }
-  const { data: game } = await db.from('hotseat_games').select().eq('id', state.gameId).single();
-  let points = 0;
-  if (correct) {
-    const revealed = game.clues_revealed;
-    points = revealed <= 1 ? 5 : revealed === 2 ? 4 : revealed === 3 ? 3 : 2;
-  }
-  const newScore = game.team_score + points;
-
-  await db.from('hotseat_games').update({
-    status: 'result',
-    team_score: newScore,
-    last_result: correct ? 'correct' : 'wrong',
-    last_points: points,
-    last_word: game.current_word,
-  }).eq('id', state.gameId);
-}
-
-// ═══════════════════════════════════════════
-// HOST: SHOW RESULT
-// ═══════════════════════════════════════════
-function showResult(game) {
-  const correct = game.last_result === 'correct';
-
-  // Show result overlay inside the TV stage (keep TV layout visible with controls)
-  goTo('screen-host-tv');
-  document.getElementById('tvPhaseWaiting').style.display = 'none';
-  document.getElementById('tvPhaseActive').style.display = 'none';
-
-  // Inject result into stage
-  const stage = document.querySelector('.tv-stage');
-  stage.innerHTML = `
-    <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;">
-      <div style="font-size:3.5rem;">${correct ? '🎉' : '😬'}</div>
-      <div style="font-family:Syne,sans-serif;font-weight:800;font-size:clamp(2rem,5vw,3.5rem);line-height:1;">
-        ${correct ? 'Correct!' : 'Nice try!'}
-      </div>
-      <div style="color:var(--smoke);font-size:1rem;">Word: <strong style="color:var(--cream)">${game.last_word}</strong></div>
-      ${correct ? `<div style="font-family:Syne,sans-serif;font-weight:800;font-size:3rem;color:var(--gold);">+${game.last_points} pts</div>` : '<div style="font-family:Syne,sans-serif;font-weight:800;font-size:3rem;color:var(--smoke);">+0 pts</div>'}
-      <div style="color:var(--smoke);font-size:0.9rem;">Team score: <strong style="color:var(--cream)">${game.team_score} pts</strong></div>
-    </div>`;
-
-  // Update score in top bar
-  document.getElementById('tvScore').textContent = game.team_score;
+  // Points preview
+  document.getElementById('pointsPreview').textContent = pointsForLevel(wordObj.level);
 
   // Controls
-  document.getElementById('tvControlReveal').style.display = 'none';
-  document.getElementById('tvControlResult').style.display = 'none';
-  document.getElementById('tvControlWait').style.display = 'none';
+  document.getElementById('ctrlWait').style.display='none';
+  document.getElementById('ctrlGame').style.display='flex';
+  document.getElementById('ctrlRoundDone').style.display='none';
+  document.getElementById('ctrlGameDone').style.display='none';
+  document.getElementById('btnNextWord').style.display='none';
+}
 
-  if (game.current_round >= game.total_rounds) {
-    document.getElementById('tvControlDone').style.display = 'block';
-    document.getElementById('tvControlNext').style.display = 'none';
-  } else {
-    document.getElementById('tvControlNext').style.display = 'block';
-    document.getElementById('tvControlDone').style.display = 'none';
+function updateRoundProgress(currentRound){
+  document.querySelectorAll('.round-dot').forEach((dot,i)=>{
+    dot.className='round-dot';
+    if(i<currentRound) dot.classList.add('done');
+    if(i===currentRound) dot.classList.add('active');
+  });
+}
+
+// ═══════════════════════════════════
+// TIMER
+// ═══════════════════════════════════
+function startTimer(){
+  clearInterval(state.timerInterval);
+  state.timerSeconds=40;
+  updateTimerDisplay(40);
+  state.timerInterval = setInterval(()=>{
+    state.timerSeconds--;
+    updateTimerDisplay(state.timerSeconds);
+    if(state.timerSeconds<=10 && state.timerSeconds>0) Audio.timerUrgent();
+    if(state.timerSeconds<=0){
+      clearInterval(state.timerInterval);
+      // Auto-skip on timeout
+      markResult(false, true);
+    }
+  },1000);
+}
+
+function stopTimer(){ clearInterval(state.timerInterval); }
+
+function updateTimerDisplay(s){
+  const safe = Math.max(0,s);
+  document.getElementById('timerNumber').textContent=safe;
+  document.getElementById('timerNumber').style.color = safe<=10?'var(--fire)':'var(--cream)';
+  // Circle
+  const circ=238.76;
+  const offset = circ*(1-safe/40);
+  const el=document.getElementById('timerCircle');
+  el.style.strokeDashoffset=offset;
+  el.style.stroke = safe<=10?'#FF4D00':'var(--gold)';
+  // Sync to display + student views via DB every 5s
+  if(safe%5===0 && state.role==='host'){
+    db.from('hotseat_games').update({timer_seconds:safe}).eq('id',state.gameId);
   }
 }
 
-// ═══════════════════════════════════════════
-// HOST: NEXT ROUND
-// ═══════════════════════════════════════════
-async function nextRound() {
-  // Restore original TV stage HTML before beginning next round
-  document.querySelector('.tv-stage').innerHTML = `
-    <div id="tvPhaseWaiting" style="text-align:center;">
-      <div class="text-smoke" style="font-size:1.1rem;">Starting round...</div>
-    </div>
-    <div id="tvPhaseActive" style="display:none;width:100%;flex-direction:column;align-items:center;">
-      <div class="hot-seat-label">In the Hot Seat</div>
-      <div class="hot-seat-name" id="tvHotSeatName">—</div>
-      <div class="target-word-box">
-        <div class="target-word" id="tvTargetWord">—</div>
-      </div>
-      <div class="clue-stage">
-        <ul class="clue-reveal-list" id="tvClueList"></ul>
-        <div class="clues-submitted-count" id="cluesSubmittedCount"></div>
-      </div>
-    </div>`;
-  await beginRound();
+// ═══════════════════════════════════
+// HOST: MARK RESULT
+// ═══════════════════════════════════
+async function markResult(correct, timedOut=false){
+  stopTimer();
+  const round = state.rounds[state.currentRound];
+  const wordObj = round[state.currentWordIdx];
+  const pts = correct ? pointsForLevel(wordObj.level) : 0;
+  const newScore = state.teamScore + pts;
+
+  if(correct) Audio.correct(); else if(!timedOut) Audio.wrong();
+
+  await db.from('hotseat_games').update({
+    status:'result',
+    team_score: newScore,
+    last_result: correct?'correct':'wrong',
+    last_points: pts,
+    last_word: wordObj.word,
+    last_level: wordObj.level,
+  }).eq('id',state.gameId);
+
+  state.teamScore = newScore;
+  document.getElementById('tvScore').textContent = newScore;
+  document.getElementById('tvScoreSide').textContent = newScore;
+  document.getElementById('ctrlGame').style.display='none';
+  document.getElementById('btnNextWord').style.display='block';
+  document.getElementById('ctrlGame').style.display='flex';
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// HOST: NEXT WORD
+// ═══════════════════════════════════
+async function nextWord(){
+  const round = state.rounds[state.currentRound];
+  const nextIdx = state.currentWordIdx+1;
+
+  if(nextIdx >= round.length){
+    // Round done
+    stopTimer();
+    document.getElementById('ctrlGame').style.display='none';
+    if(state.currentRound>=4){
+      document.getElementById('ctrlGameDone').style.display='block';
+    } else {
+      document.getElementById('ctrlRoundDone').style.display='block';
+    }
+    await db.from('hotseat_games').update({status:'round_done',current_word_idx:nextIdx}).eq('id',state.gameId);
+    return;
+  }
+
+  await db.from('hotseat_games').update({
+    status:'playing', current_word_idx:nextIdx,
+  }).eq('id',state.gameId);
+}
+
+// ═══════════════════════════════════
+// HOST: NEXT ROUND
+// ═══════════════════════════════════
+async function nextRound(){
+  const nextRoundIdx = state.currentRound+1;
+  if(nextRoundIdx>=5){ await endGame(); return; }
+  await beginRound(nextRoundIdx);
+}
+
+// ═══════════════════════════════════
 // HOST: END GAME
-// ═══════════════════════════════════════════
-async function endGame() {
-  Audio.stopBg();
-  const { data: game } = await db.from('hotseat_games').select().eq('id', state.gameId).single();
-  await db.from('hotseat_games').update({ status: 'ended' }).eq('id', state.gameId);
-  document.getElementById('gameoverScore').textContent = game.team_score;
+// ═══════════════════════════════════
+async function endGame(){
+  stopTimer(); Audio.stopBg();
+  await db.from('hotseat_games').update({status:'ended'}).eq('id',state.gameId);
+  document.getElementById('gameoverScore').textContent=state.teamScore;
   goTo('screen-gameover');
   Audio.gameOver();
 }
 
-async function cancelGame() {
-  Audio.stopBg();
-  if (state.gameId) {
-    await db.from('hotseat_games').update({ status: 'ended' }).eq('id', state.gameId);
-  }
+async function cancelGame(){
+  stopTimer(); Audio.stopBg();
+  if(state.gameId) await db.from('hotseat_games').update({status:'ended'}).eq('id',state.gameId);
   resetToLanding();
 }
 
-// ═══════════════════════════════════════════
-// STUDENT: SHOW CLUE SCREEN
-// ═══════════════════════════════════════════
-function showStudentClue(game) {
-  goTo('screen-student-clue');
-  document.getElementById('studentRoundNum').textContent = game.current_round;
-  document.getElementById('studentWord').textContent = (game.current_word || '—').toUpperCase();
-
-  // Fetch hot seat name fresh from players table
-  db.from('hotseat_players')
-    .select('nickname')
-    .eq('game_id', state.gameId)
-    .eq('player_id', game.hot_seat_player_id)
-    .single()
-    .then(({ data }) => {
-      document.getElementById('studentHotSeatName').textContent = data?.nickname || '?';
-    });
-
-  // Check if I already submitted
-  const myClueSlot = game.clues.find(c => c.player_id === state.myId);
-  const inputArea = document.getElementById('clueInputArea');
-  const submittedEl = document.getElementById('clueSubmitted');
-  const dupEl = document.getElementById('clueDuplicate');
-
-  inputArea.style.display = 'flex';
-  submittedEl.style.display = 'none';
-  dupEl.style.display = 'none';
-  document.getElementById('clueInput').value = '';
-
-  if (myClueSlot) {
-    if (myClueSlot.submitted) {
-      inputArea.style.display = 'none';
-      if (myClueSlot.eliminated) {
-        dupEl.style.display = 'block';
-      } else {
-        submittedEl.style.display = 'block';
-      }
-    }
-  } else {
-    // I'm not in the clue list — I'm in hot seat or late join
-    inputArea.style.display = 'none';
-    submittedEl.innerHTML = '<div class="submitted-ok">Watch the TV screen!</div>';
-    submittedEl.style.display = 'block';
-  }
+// ═══════════════════════════════════
+// HOST: SHOW RESULT STATE
+// ═══════════════════════════════════
+function showResultState(game){
+  const correct=game.last_result==='correct';
+  document.getElementById('ctrlGame').style.display='flex';
+  document.getElementById('btnNextWord').style.display='block';
+  document.getElementById('tvScore').textContent=game.team_score;
+  document.getElementById('tvScoreSide').textContent=game.team_score;
 }
 
-// ═══════════════════════════════════════════
-// STUDENT: SUBMIT CLUE
-// ═══════════════════════════════════════════
-async function submitClue() {
-  const clue = document.getElementById('clueInput').value.trim().toLowerCase();
-  if (!clue) { showToast('Type a clue first'); return; }
-  if (clue.includes(' ')) { showToast('One word only!'); return; }
+// ═══════════════════════════════════
+// REAL-TIME SUBSCRIPTION
+// ═══════════════════════════════════
+function subscribeToGame(){
+  state.channel = db.channel('hotseat_'+state.gameId)
+    .on('postgres_changes',{event:'*',schema:'public',table:'hotseat_games',filter:`id=eq.${state.gameId}`},payload=>{
+      handleGameState(payload.new);
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'hotseat_players',filter:`game_id=eq.${state.gameId}`},()=>{
+      if(state.role==='host') refreshPlayerList();
+    })
+    .subscribe();
+}
 
-  const { data: game } = await db.from('hotseat_games').select().eq('id', state.gameId).single();
-  const clues = [...game.clues];
+async function handleGameState(game){
+  state.teamScore = game.team_score;
+  state.rounds = game.rounds;
 
-  const myIdx = clues.findIndex(c => c.player_id === state.myId);
-  if (myIdx === -1) { showToast("You're in the Hot Seat!"); return; }
-  if (clues[myIdx].submitted) { showToast('Already submitted!'); return; }
+  // Update score everywhere
+  ['tvScore','tvScoreSide','studentScore','hotSeatScore'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent=game.team_score;
+  });
 
-  // Check for word = target
-  if (clue === game.current_word.toLowerCase()) {
-    showToast("Can't use the target word!");
+  if(game.status==='lobby') return;
+
+  if(game.status==='ended'){
+    stopTimer();
+    document.getElementById('gameoverScore').textContent=game.team_score;
+    goTo('screen-gameover');
+    if(state.role!=='host') Audio.gameOver();
     return;
   }
 
-  clues[myIdx].clue = clue;
-  clues[myIdx].submitted = true;
+  if(game.status==='result'){
+    if(state.role==='host') showResultState(game);
+    else if(state.role==='display') showDisplayResult(game);
+    return;
+  }
 
-  // Check duplicates across all submitted clues
-  const submittedClues = clues.filter(c => c.submitted).map(c => c.clue.toLowerCase());
-  const counts = {};
-  submittedClues.forEach(c => counts[c] = (counts[c] || 0) + 1);
-  clues.forEach(c => {
-    if (c.submitted) {
-      c.eliminated = counts[c.clue.toLowerCase()] > 1;
+  if(game.status==='round_done'){
+    if(state.role==='display'){
+      document.getElementById('displayActive').style.display='none';
+      document.getElementById('displayResult').style.display='none';
+      document.getElementById('displayWaiting').style.display='flex';
+      document.getElementById('displayWaiting').querySelector('.display-waiting').textContent='Round complete! 🎉';
     }
-  });
+    return;
+  }
 
-  await db.from('hotseat_games').update({ clues }).eq('id', state.gameId);
+  if(game.status==='playing'){
+    state.currentRound=game.current_round;
+    state.currentWordIdx=game.current_word_idx;
+    state.hotSeatPlayerId=game.hot_seat_player_id;
 
-  document.getElementById('clueInputArea').style.display = 'none';
-  if (clues[myIdx].eliminated) {
-    Audio.duplicate();
-    document.getElementById('clueDuplicate').style.display = 'block';
-  } else {
-    Audio.clueIn();
-    document.getElementById('clueSubmitted').style.display = 'block';
+    if(state.role==='host') showHostTv(game);
+    else if(state.role==='display') showDisplay(game);
+    else if(state.role==='student'){
+      if(game.hot_seat_player_id===state.myId) showStudentHotSeat(game);
+      else showStudentWord(game);
+    }
   }
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// DISPLAY VIEW
+// ═══════════════════════════════════
+async function connectDisplay(code){
+  const {data:game,error} = await db.from('hotseat_games').select().eq('room_code',code).single();
+  if(error||!game){ showToast('Room not found'); return; }
+  state.gameId=game.id;
+  subscribeToGame();
+  if(game.status==='playing') showDisplay(game);
+}
+
+function showDisplay(game){
+  document.getElementById('displayWaiting').style.display='none';
+  document.getElementById('displayResult').style.display='none';
+  document.getElementById('displayActive').style.display='flex';
+
+  const round=game.rounds[game.current_round];
+  const wordObj=round[game.current_word_idx];
+
+  document.getElementById('displayWord').textContent=wordObj.word.toUpperCase();
+  document.getElementById('displayRound').textContent=game.current_round+1;
+  document.getElementById('displayScore').textContent=game.team_score;
+
+  const lvl=document.getElementById('displayLevel');
+  lvl.textContent=wordObj.level; lvl.className='level-badge '+levelClass(wordObj.level);
+
+  // Hot seat name
+  db.from('hotseat_players').select('nickname').eq('game_id',game.id).eq('player_id',game.hot_seat_player_id).single()
+    .then(({data})=>{ document.getElementById('displayHotSeat').textContent=data?.nickname||'?'; });
+
+  // Timer sync
+  document.getElementById('displayTimer').textContent=Math.max(0,game.timer_seconds||40);
+
+  // Word queue
+  const queue=document.getElementById('displayWordQueue');
+  queue.innerHTML=round.map((w,i)=>{
+    let cls='word-chip';
+    if(i<game.current_word_idx) cls+=' done';
+    if(i===game.current_word_idx) cls+=' current';
+    return `<span class="${cls}">${w.word}</span>`;
+  }).join('');
+}
+
+function showDisplayResult(game){
+  document.getElementById('displayActive').style.display='none';
+  document.getElementById('displayWaiting').style.display='none';
+  const res=document.getElementById('displayResult');
+  res.style.display='flex';
+  const correct=game.last_result==='correct';
+  document.getElementById('displayResultIcon').textContent=correct?'🎉':'😬';
+  document.getElementById('displayResultText').textContent=correct?'Correct!':'Nice try!';
+  document.getElementById('displayResultPoints').textContent=correct?`+${game.last_points} pts`:'+0 pts';
+  document.getElementById('displayResultWord').textContent=game.last_word;
+  document.getElementById('displayScore').textContent=game.team_score;
+}
+
+// ═══════════════════════════════════
+// STUDENT: JOIN
+// ═══════════════════════════════════
+async function joinGame(){
+  const code=document.getElementById('joinCode').value.trim().toUpperCase();
+  const nick=document.getElementById('joinNickname').value.trim();
+  if(!code||code.length!==4){ showToast('Enter a 4-letter room code'); return; }
+  if(!nick){ showToast('Enter a nickname'); return; }
+
+  const {data:game,error}=await db.from('hotseat_games').select().eq('room_code',code).single();
+  if(error||!game){ showToast('Room not found'); return; }
+  if(game.status==='ended'){ showToast('Game has ended'); return; }
+
+  state.role='student'; state.roomCode=code; state.gameId=game.id;
+  state.myId='player_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  state.myNickname=nick;
+
+  const {error:pe}=await db.from('hotseat_players').insert({game_id:game.id,player_id:state.myId,nickname:nick,is_host:false,clue_submitted:false,clue_text:null,clue_eliminated:false});
+  if(pe){ showToast('Could not join: '+pe.message); return; }
+
+  document.getElementById('waitingNickname').textContent=nick;
+  if(game.status==='playing') handleGameState(game);
+  else goTo('screen-student-waiting');
+  subscribeToGame();
+}
+
+function showStudentWord(game){
+  goTo('screen-student-word');
+  const round=game.rounds[game.current_round];
+  const wordObj=round[game.current_word_idx];
+  document.getElementById('studentWord').textContent=wordObj.word.toUpperCase();
+  document.getElementById('studentRound').textContent=game.current_round+1;
+  document.getElementById('studentWordNum').textContent=game.current_word_idx+1;
+  document.getElementById('studentScore').textContent=game.team_score;
+  document.getElementById('studentTimer').textContent=Math.max(0,game.timer_seconds||40);
+  const lvl=document.getElementById('studentLevel');
+  lvl.textContent=wordObj.level; lvl.className='level-badge '+levelClass(wordObj.level);
+  db.from('hotseat_players').select('nickname').eq('game_id',game.id).eq('player_id',game.hot_seat_player_id).single()
+    .then(({data})=>{ document.getElementById('studentHotSeat').textContent=data?.nickname||'?'; });
+}
+
+function showStudentHotSeat(game){
+  goTo('screen-student-hotseat');
+  document.getElementById('hotSeatScore').textContent=game.team_score;
+}
+
+// ═══════════════════════════════════
+// PLAYER LIST
+// ═══════════════════════════════════
+async function refreshPlayerList(){
+  const {data}=await db.from('hotseat_players').select().eq('game_id',state.gameId).eq('is_host',false);
+  state.players=data||[];
+  const screen=document.querySelector('.screen.active')?.id;
+  if(screen==='screen-host-lobby'){
+    const el=document.getElementById('lobbyPlayers');
+    el.innerHTML=state.players.length===0
+      ?'<div style="color:var(--smoke);font-size:0.9rem;">Waiting for players...</div>'
+      :state.players.map(p=>`<div class="lobby-player-tag">👤 ${p.nickname}</div>`).join('');
+    const btn=document.getElementById('startGameBtn');
+    btn.disabled=state.players.length<1;
+    btn.textContent=state.players.length<1?'Waiting for players...':`Start Game (${state.players.length} player${state.players.length!==1?'s':''})`;
+  } else if(screen==='screen-host-tv'){
+    const el=document.getElementById('tvPlayerList');
+    el.innerHTML=state.players.map(p=>{
+      const isHs=p.player_id===state.hotSeatPlayerId;
+      return `<div class="player-chip ${isHs?'hotseat':''}">
+        <div class="player-dot"></div>
+        <span>${p.nickname}</span>
+        ${isHs?'<span style="margin-left:auto;font-size:0.7rem;color:var(--gold)">🔥</span>':''}
+      </div>`;
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════
 // RESET
-// ═══════════════════════════════════════════
-function toggleMute() {
-  const muted = Audio.toggleMute();
-  document.getElementById('muteBtn').textContent = muted ? '🔇' : '🔊';
-}
-
-function resetToLanding() {
-  if (state.channel) {
-    db.removeChannel(state.channel);
-  }
-  state = {
-    role: null, roomCode: null, gameId: null,
-    myId: null, myNickname: null, players: [],
-    currentRound: null, totalRounds: 10,
-    teamScore: 0, wordBank: [], usedWords: [],
-    cluesRevealed: 0, cluesAll: [],
-    hotSeatPlayerId: null, channel: null,
-  };
+// ═══════════════════════════════════
+function resetToLanding(){
+  stopTimer(); Audio.stopBg();
+  if(state.channel) db.removeChannel(state.channel);
+  state={role:null,roomCode:null,gameId:null,myId:null,myNickname:null,players:[],channel:null,currentRound:0,currentWordIdx:0,rounds:[],teamScore:0,timerInterval:null,timerSeconds:40,hotSeatPlayerId:null};
   goTo('screen-landing');
 }
 </script>
