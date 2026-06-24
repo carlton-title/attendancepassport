@@ -366,12 +366,9 @@
     </div>
 
     <div class="card">
-      <p class="eyebrow">Check-in</p>
-      <h2>📱 Session &amp; QR Code</h2>
+      <p class="eyebrow">Attendance</p>
+      <h2>📋 Mark Absent Students</h2>
       <div id="sessionBannerWrap"></div>
-
-      <!-- Session button -->
-      <div class="session-btn-wrap" id="sessionBtnWrap"></div>
 
       <!-- Missed attendance recovery -->
       <div class="recovery-card" id="recoveryCard" style="display:none;">
@@ -386,15 +383,16 @@
         <button class="btn btn-sm btn-blue" id="recoveryOpenBtn" style="margin-top:10px;" disabled>📂 Open Recovery Session</button>
       </div>
 
-      <div class="qr-wrap" id="qrWrapEl">
-        <div id="qrcode"></div>
-        <div class="qr-link" id="qrLink"></div>
-        <button class="btn btn-sm" id="fullscreenQrBtn" style="margin-top:10px;">🖥️ Fullscreen QR</button>
+      <div id="absentEntryWrap" style="margin-top:12px;">
+        <label style="font-weight:600;display:block;margin-bottom:6px;">Enter Absent Student IDs (one per line):</label>
+        <textarea id="absentIdsInput" rows="8" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;font-size:1rem;font-family:monospace;box-sizing:border-box;" placeholder="36801&#10;37123&#10;39604"></textarea>
+        <button class="btn btn-red" id="markAbsentBtn" style="margin-top:10px;width:100%;" onclick="markAbsentStudents()">❌ Mark Absent</button>
+        <div class="hint" id="absentResultHint" style="margin-top:8px;display:none;"></div>
       </div>
-      <div class="hint" id="qrHintEl">Students scan this to open the check-in page, then enter their 5-digit Student ID.</div>
-      <div class="flex-between" id="qrButtonsEl" style="margin-top:14px;">
-        <button class="btn btn-red" id="completeBtn" disabled>🔒 Close Attendance</button>
-      </div>
+
+      <div id="qrWrapEl" style="display:none;"><div id="qrcode"></div><div class="qr-link" id="qrLink"></div></div>
+      <div id="qrHintEl" style="display:none;"></div>
+      <div id="qrButtonsEl" style="display:none;"><button class="btn btn-red" id="completeBtn" disabled>🔒 Close Attendance</button></div>
       <div class="hint" id="completeHint" style="display:none;"></div>
     </div>
 
@@ -2627,6 +2625,81 @@ if ('serviceWorker' in navigator) {
       .then(reg => console.log('SW registered'))
       .catch(err => console.log('SW failed:', err));
   });
+}
+
+async function markAbsentStudents() {
+  const grade = currentGrade;
+  const section = currentSection;
+  if (!grade || !section) {
+    alert("Please select a class first.");
+    return;
+  }
+
+  const raw = document.getElementById('absentIdsInput').value.trim();
+  if (!raw) {
+    alert("Please enter at least one Student ID.");
+    return;
+  }
+
+  const absentIds = raw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+  if (absentIds.length === 0) {
+    alert("No valid Student IDs found.");
+    return;
+  }
+
+  const btn = document.getElementById('markAbsentBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving...';
+
+  const hint = document.getElementById('absentResultHint');
+  hint.style.display = 'block';
+  hint.textContent = 'Saving...';
+
+  try {
+    const dateISO = todayISO();
+    const bkk = getBangkokNow();
+    const nowStr = bkk.getUTCFullYear() + '-' + String(bkk.getUTCMonth()+1).padStart(2,'0') + '-' + String(bkk.getUTCDate()).padStart(2,'0') + 'T' + String(bkk.getUTCHours()).padStart(2,'0') + ':' + String(bkk.getUTCMinutes()).padStart(2,'0') + ':00';
+    const data = await loadSectionData(grade, section);
+
+    // Get all student IDs for this section using ROSTER
+    const rosterEntry = getRoster(grade, section);
+    const allIds = rosterEntry.map(s => String(s.studentId));
+
+    // Create/update session
+    if (!data.sessions) data.sessions = {};
+    data.sessions[dateISO] = { opened: true, completed: true, openedAt: nowStr, completedAt: nowStr, token: "TEACHER" };
+
+    if (!data.logs) data.logs = {};
+    if (!data.records) data.records = {};
+
+    // Mark all students
+    for (const sid of allIds) {
+      const isAbsent = absentIds.includes(sid);
+      const status = isAbsent ? STATUS.ABSENT : STATUS.PRESENT;
+      const remark = isAbsent ? "Marked absent by teacher" : "Present";
+
+      if (!data.logs[sid]) data.logs[sid] = [];
+      data.logs[sid] = data.logs[sid].filter(e => e.sessionDate !== dateISO);
+      data.logs[sid].push({ sessionDate: dateISO, status, timestamp: nowStr, remark });
+      data.records[sid] = { status, timestamp: nowStr, sessionDate: dateISO, remark };
+    }
+
+    await saveSectionData(grade, section, data);
+
+    const presentCount = allIds.length - absentIds.length;
+    hint.textContent = '✅ Done! ' + presentCount + ' Present, ' + absentIds.length + ' Absent saved for ' + dateISO;
+    hint.style.color = 'var(--green)';
+    btn.textContent = '✅ Saved!';
+    document.getElementById('absentIdsInput').value = '';
+    _allSectionsCache = null;
+    renderRoster(grade, section);
+
+  } catch(e) {
+    hint.textContent = '❌ Error: ' + e.message;
+    hint.style.color = 'var(--red)';
+    btn.disabled = false;
+    btn.textContent = '❌ Mark Absent';
+  }
 }
 </script>
 </body>
