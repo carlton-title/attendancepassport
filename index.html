@@ -1513,6 +1513,9 @@ async function renderRoster() {
     } else if (status === STATUS.SKIPPED) {
       stampHtml = `<div class="stamp stamp-pink">✕</div><div><div class="status-name" style="color:var(--pink)">Skipped</div><div class="remark-text">${remark||'Marked as skipped'}</div></div>`;
       tsHtml = ts ? formatTimestamp(new Date(ts)) : '—';
+    } else if (status === STATUS.NO_WORKSHEET || status === 'no_worksheet') {
+      stampHtml = `<div class="stamp stamp-gold">✕</div><div><div class="status-name" style="color:var(--gold)">No Worksheet</div><div class="remark-text">${remark||''}</div></div>`;
+      tsHtml = ts ? formatTimestamp(new Date(ts)) : '—';
     } else {
       stampHtml = `<div class="stamp stamp-gray">·</div><div><div class="status-name" style="color:#9aa3b2">Pending</div><div class="remark-text">Waiting for scan</div></div>`;
       tsHtml = '—';
