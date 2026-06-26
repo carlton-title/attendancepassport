@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-passport-v8';
+const CACHE_NAME = 'attendance-passport-v9';
 const STATIC_ASSETS = [
   '/attendancepassport/',
   '/attendancepassport/index.html'
