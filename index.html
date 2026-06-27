@@ -13,7 +13,6 @@
 
 <title>Attendance Passport</title>
 <!-- APP VERSION: v3.4 NO-AUTOREFRESH -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -2316,11 +2315,19 @@ async function submitResetVerify() {
 
 // Force correct overlay on load
 document.addEventListener('DOMContentLoaded', function() {
-  teacherUnlocked = true;
-  document.getElementById('pinOverlay').style.display = 'none';
-  document.getElementById('teacherAuthOverlay').style.display = 'none';
-  if (document.getElementById('welcomeOverlay')) document.getElementById('welcomeOverlay').style.display = 'none';
-  showTeacherView();
+  try {
+    teacherUnlocked = true;
+    var pinOverlay = document.getElementById('pinOverlay');
+    var authOverlay = document.getElementById('teacherAuthOverlay');
+    var welcomeOverlay = document.getElementById('welcomeOverlay');
+    if (pinOverlay) pinOverlay.style.display = 'none';
+    if (authOverlay) authOverlay.style.display = 'none';
+    if (welcomeOverlay) welcomeOverlay.style.display = 'none';
+    showTeacherView();
+  } catch(e) {
+    console.error('Init error:', e);
+    document.getElementById('teacherView').style.display = 'block';
+  }
 });
 
 // Auto-refresh removed — use the 🔄 Refresh button to update manually
