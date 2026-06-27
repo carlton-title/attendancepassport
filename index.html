@@ -2346,26 +2346,13 @@ async function submitResetVerify() {
 
 
 // Force correct overlay on load
-(function forceOverlay() {
-  var params = new URLSearchParams(window.location.search);
-  var mode = params.get('mode');
-  var setup = params.get('setup');
-  var teacher = params.get('teacher');
-  
-  // Hide everything
-  var ids = ['teacherAuthOverlay','pinOverlay','welcomeOverlay'];
-  ids.forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) { el.style.display = 'none'; el.classList.remove('show'); }
-  });
-  document.getElementById('teacherView').style.display = 'none';
-
-  // Always go to teacher view
+document.addEventListener('DOMContentLoaded', function() {
   teacherUnlocked = true;
   document.getElementById('pinOverlay').style.display = 'none';
   document.getElementById('teacherAuthOverlay').style.display = 'none';
+  if (document.getElementById('welcomeOverlay')) document.getElementById('welcomeOverlay').style.display = 'none';
   showTeacherView();
-})();
+});
 
 // Auto-refresh removed — use the 🔄 Refresh button to update manually
 </script>
