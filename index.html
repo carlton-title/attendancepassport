@@ -548,11 +548,6 @@ function chooseTeacher() {
   setTimeout(() => document.getElementById('pinInput').focus(), 100);
 }
 
-function chooseStudent() {
-  document.getElementById('welcomeOverlay').classList.remove('show');
-  switchToStudent();
-}
-
 function backToWelcome() {
   // No welcome screen — just hide auth overlays and show PIN
   document.getElementById('teacherAuthOverlay').classList.remove('show');
@@ -583,12 +578,6 @@ function requirePin() {
     document.getElementById('pinError').style.display = 'none';
     setTimeout(() => document.getElementById('pinInput').focus(), 100);
   }
-}
-
-function goToStudentView() {
-  document.getElementById('pinOverlay').classList.remove('show');
-  document.getElementById('welcomeOverlay').classList.remove('show');
-  switchToStudent();
 }
 
 document.getElementById('pinInput').addEventListener('keydown', (e) => {
@@ -877,30 +866,10 @@ let _autoCheckTimer = null;
 
 function showTeacherView() {
   document.getElementById('teacherView').style.display = 'block';
-  
   clearTargetDate();
   renderRoster();
   renderNoClass();
   renderPastWeeks();
-  startAutoCheckTimer();
-}
-
-function switchToStudent() {
-  
-  document.getElementById('teacherView').style.display = 'none';
-  stopAutoCheckTimer();
-  renderSessionInfo();
-}
-
-/* ============================================================
-   AUTO-CHECK TIMER (checks every 30s if session should open/close in browser)
-   Note: real auto open/close is handled by edge function.
-   This just refreshes the UI to reflect database state.
-   ============================================================ */
-function startAutoCheckTimer() {
-  // Auto-refresh removed — use Refresh button to manually update
-}
-
 }
 
 /* ============================================================
