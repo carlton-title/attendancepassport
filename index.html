@@ -1362,19 +1362,19 @@ async function renderRoster() {
     const wi = ts ? getWeekInfo(null, dateISO) : null;
 
     if (status === STATUS.PRESENT) {
-      stampHtml = `<div class="stamp stamp-green">✓</div><div><div class="status-name" style="color:var(--green)">Present</div><div class="remark-text">${remark||''}</div></div>`;
+      stampHtml = `<div class="stamp stamp-green">✓</div><div><div class="status-name" style="color:var(--green)">Present</div></div>`;
       tsHtml = ts ? `${formatTimestamp(new Date(ts))}${wi?`<br>${wi.weekLabel} · ${wi.rangeStr}`:''}` : '—';
     } else if (status === STATUS.LATE) {
-      stampHtml = `<div class="stamp stamp-purple">✕</div><div><div class="status-name" style="color:var(--purple)">Late</div><div class="remark-text">${remark||'Arrived late to class'}</div></div>`;
+      stampHtml = `<div class="stamp stamp-purple">✕</div><div><div class="status-name" style="color:var(--purple)">Late</div><div class="remark-text">${remark&&remark.trim()?remark:''}</div></div>`;
       tsHtml = ts ? formatTimestamp(new Date(ts)) : '—';
     } else if (status === STATUS.EXCUSE) {
-      stampHtml = `<div class="stamp stamp-blue">✓</div><div><div class="status-name" style="color:var(--blue)">Excuse</div><div class="remark-text">${remark||'Excused by teacher'}</div></div>`;
+      stampHtml = `<div class="stamp stamp-blue">✓</div><div><div class="status-name" style="color:var(--blue)">Excuse</div><div class="remark-text">${remark&&remark.trim()?remark:''}</div></div>`;
       tsHtml = ts ? formatTimestamp(new Date(ts)) : '—';
     } else if (status === STATUS.ABSENT) {
       stampHtml = `<div class="stamp stamp-red">✕</div><div><div class="status-name" style="color:var(--red)">Absent</div><div class="remark-text">${remark||''}</div></div>`;
       tsHtml = ts ? formatTimestamp(new Date(ts)) : '—';
     } else if (status === STATUS.SKIPPED) {
-      stampHtml = `<div class="stamp stamp-pink">✕</div><div><div class="status-name" style="color:var(--pink)">Skipped</div><div class="remark-text">${remark||'Marked as skipped'}</div></div>`;
+      stampHtml = `<div class="stamp stamp-pink">✕</div><div><div class="status-name" style="color:var(--pink)">Skipped</div><div class="remark-text">${remark&&remark.trim()?remark:''}</div></div>`;
       tsHtml = ts ? formatTimestamp(new Date(ts)) : '—';
     } else if (status === STATUS.NO_WORKSHEET || status === 'no_worksheet') {
       stampHtml = `<div class="stamp stamp-gray">✕</div><div><div class="status-name" style="color:#1F2B3E">No Worksheet Submitted</div><div class="remark-text">${remark||''}</div></div>`;
@@ -1576,11 +1576,11 @@ function renderSectionsForDateHTML(dateISO, allSections, globalData) {
       else if (status===STATUS.ABSENT) countRed++;
       else if (status===STATUS.SKIPPED) countPink++;
       else countNone++;
-      if (status===STATUS.PRESENT){ stampHtml=`<div class="stamp stamp-green">✓</div><div><div class="status-name" style="color:var(--green)">Present</div><div class="remark-text">${entry?entry.remark||'':}</div></div>`; tsHtml=entry&&entry.timestamp?formatTimestamp(new Date(entry.timestamp)):'—'; }
-      else if (status===STATUS.LATE){ stampHtml=`<div class="stamp stamp-purple">✕</div><div><div class="status-name" style="color:var(--purple)">Late</div><div class="remark-text">${entry?entry.remark||'Arrived late':''}</div></div>`; tsHtml=entry&&entry.timestamp?formatTimestamp(new Date(entry.timestamp)):'—'; }
-      else if (status===STATUS.EXCUSE){ stampHtml=`<div class="stamp stamp-blue">✓</div><div><div class="status-name" style="color:var(--blue)">Excuse</div><div class="remark-text">${entry?entry.remark||'Excused':'' }</div></div>`; tsHtml=entry&&entry.timestamp?formatTimestamp(new Date(entry.timestamp)):'—'; }
+      if (status===STATUS.PRESENT){ stampHtml=`<div class="stamp stamp-green">✓</div><div><div class="status-name" style="color:var(--green)">Present</div></div>`; tsHtml=entry&&entry.timestamp?formatTimestamp(new Date(entry.timestamp)):'—'; }
+      else if (status===STATUS.LATE){ stampHtml=`<div class="stamp stamp-purple">✕</div><div><div class="status-name" style="color:var(--purple)">Late</div><div class="remark-text">${entry&&entry.remark&&entry.remark.trim()?entry.remark:''}</div></div>`; tsHtml=entry&&entry.timestamp?formatTimestamp(new Date(entry.timestamp)):'—'; }
+      else if (status===STATUS.EXCUSE){ stampHtml=`<div class="stamp stamp-blue">✓</div><div><div class="status-name" style="color:var(--blue)">Excuse</div><div class="remark-text">${entry&&entry.remark&&entry.remark.trim()?entry.remark:''}</div></div>`; tsHtml=entry&&entry.timestamp?formatTimestamp(new Date(entry.timestamp)):'—'; }
       else if (status===STATUS.ABSENT){ stampHtml=`<div class="stamp stamp-red">✕</div><div><div class="status-name" style="color:var(--red)">Absent</div><div class="remark-text">${entry?entry.remark||''}</div></div>`; tsHtml=entry&&entry.timestamp?formatTimestamp(new Date(entry.timestamp)):'—'; }
-      else if (status===STATUS.SKIPPED){ stampHtml=`<div class="stamp stamp-pink">✕</div><div><div class="status-name" style="color:var(--pink)">Skipped</div><div class="remark-text">${entry?entry.remark||'Skipped':''}</div></div>`; tsHtml=entry&&entry.timestamp?formatTimestamp(new Date(entry.timestamp)):'—'; }
+      else if (status===STATUS.SKIPPED){ stampHtml=`<div class="stamp stamp-pink">✕</div><div><div class="status-name" style="color:var(--pink)">Skipped</div><div class="remark-text">${entry&&entry.remark&&entry.remark.trim()?entry.remark:''}</div></div>`; tsHtml=entry&&entry.timestamp?formatTimestamp(new Date(entry.timestamp)):'—'; }
       else if (status===STATUS.NO_WORKSHEET||status==='no_worksheet'){ stampHtml=`<div class="stamp stamp-gray">✕</div><div><div class="status-name" style="color:#1F2B3E">No Worksheet Submitted</div><div class="remark-text">${entry?entry.remark||'':''}</div></div>`; tsHtml=entry&&entry.timestamp?formatTimestamp(new Date(entry.timestamp)):'—'; }
       else { stampHtml=`<div class="stamp stamp-gray">·</div><div><div class="status-name" style="color:#9aa3b2">—</div></div>`; tsHtml='—'; }
       return `<tr><td class="col-no">${stu.no}</td><td class="col-id">${stu.studentId}</td><td>${stu.thaiName||'—'}</td><td>${stu.nickname||'—'}</td><td><div class="col-status">${stampHtml}</div></td><td class="ts-text">${tsHtml}</td></tr>`;
