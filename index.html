@@ -478,24 +478,7 @@
     </div>
   </div>
 
-  <!-- STUDENT VIEW -->
-  
 
-    <div class="card" id="studentLogin">
-      <p class="eyebrow">Student Check-in</p>
-      <h2>🎫 Enter your Student ID</h2>
-      <div id="stuClassInfo" style="margin-bottom:12px;font-size:0.85rem;color:var(--ink-soft);font-family:'Space Mono',monospace;"></div>
-      <div>
-        <label for="stuId">Your 5-digit Student ID</label>
-        <input id="stuId" type="text" inputmode="numeric" maxlength="5" placeholder="e.g. 12345">
-      </div>
-      <button class="btn btn-green" id="checkInBtn" style="margin-top:14px;width:100%;justify-content:center;">✅ Tag Me Present</button>
-      <div class="hint" id="checkInMsg"></div>
-    </div>
-
-    <div id="studentPassportWrap"></div>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
@@ -2376,22 +2359,12 @@ async function submitResetVerify() {
     if (el) { el.style.display = 'none'; el.classList.remove('show'); }
   });
   document.getElementById('teacherView').style.display = 'none';
-  
 
-  if (mode === 'student') {
-    applyURLParams();
-    switchToStudent();
-  } else if (params.toString() === '') {
-    // Owner — go straight to dashboard, no PIN needed
-    teacherUnlocked = true;
-    document.getElementById('pinOverlay').style.display = 'none';
-    document.getElementById('teacherAuthOverlay').style.display = 'none';
-    showTeacherView();
-  } else {
-    // Unknown URL params — access denied
-    
-    
-  }
+  // Always go to teacher view
+  teacherUnlocked = true;
+  document.getElementById('pinOverlay').style.display = 'none';
+  document.getElementById('teacherAuthOverlay').style.display = 'none';
+  showTeacherView();
 })();
 
 // Auto-refresh removed — use the 🔄 Refresh button to update manually
