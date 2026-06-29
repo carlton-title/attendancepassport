@@ -2396,12 +2396,32 @@ async function markAbsentStudents() {
 
     for (const sid of allIds) {
       let status, remark;
-      if (absentIds.includes(sid))           { status = STATUS.ABSENT;   remark = " "; counts.absent++; }
-      else if (noWorksheetIds.includes(sid)) { status = "no_worksheet";  remark = " "; counts.noWorksheet++; }
-      else if (skippedIds.includes(sid))     { status = STATUS.SKIPPED;  remark = " "; counts.skipped++; }
-      else if (lateIds.includes(sid))        { status = STATUS.LATE;     remark = " "; counts.late++; }
-      else if (excuseIds.includes(sid))      { status = STATUS.EXCUSE;   remark = " "; counts.excuse++; }
-      else                                   { status = STATUS.PRESENT;  remark = " "; counts.present++; }
+
+      if (absentIds.includes(sid))           { status = STATUS.ABSENT;   remark = " "; }
+      else if (noWorksheetIds.includes(sid)) { status = "no_worksheet";  remark = " "; }
+      else if (skippedIds.includes(sid))     { status = STATUS.SKIPPED;  remark = " "; }
+      else if (lateIds.includes(sid))        { status = STATUS.LATE;     remark = " "; }
+      else if (excuseIds.includes(sid))      { status = STATUS.EXCUSE;   remark = " "; }
+      else {
+        // Not in any box — check if already has a status for today, keep it
+        const existingEntry = (data.logs[sid] || []).find(e => e.sessionDate === dateISO);
+        if (existingEntry) {
+          // Already tagged — keep existing status, don't overwrite
+          counts[existingEntry.status === 'no_worksheet' ? 'noWorksheet' : existingEntry.status] = (counts[existingEntry.status === 'no_worksheet' ? 'noWorksheet' : existingEntry.status] || 0) + 1;
+          continue;
+        }
+        // No existing entry — mark as present
+        status = STATUS.PRESENT;
+        remark = " ";
+      }
+
+      // Count
+      if (status === STATUS.PRESENT) counts.present++;
+      else if (status === STATUS.ABSENT) counts.absent++;
+      else if (status === 'no_worksheet') counts.noWorksheet++;
+      else if (status === STATUS.SKIPPED) counts.skipped++;
+      else if (status === STATUS.LATE) counts.late++;
+      else if (status === STATUS.EXCUSE) counts.excuse++;
 
       if (!data.logs[sid]) data.logs[sid] = [];
       data.logs[sid] = data.logs[sid].filter(e => e.sessionDate !== dateISO);
